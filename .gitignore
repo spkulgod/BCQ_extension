@@ -1,2 +1,10 @@
 **/*.egg-info/**
 **/__pycache__/**
+**/BCQ/**/*.npy
+**/BCQ/**/*.pt
+**/BCQ/**/*.png
+**/OurCode/**/*.npy
+**/OurCode/**/*.pt
+**/OurCode/**/*.png
+
+
