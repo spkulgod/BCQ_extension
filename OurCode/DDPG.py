@@ -15,7 +15,7 @@ import torch.optim as optim
 import random
 from copy import deepcopy
 
-seed = 5000
+seed = 0
 np.random.seed(seed)
 random.seed(seed)
 torch.manual_seed(seed)
@@ -234,36 +234,40 @@ class DDPG():
 			if i%100 == 0:
 				return_store.append(self.evaluate())
 
-				if i % 500 == 0:
+				if i % 5000 == 0:
 					print(i)
-					# torch.save(self.actor.state_dict(), 'actor.pt')
-					np.save('returns_seed_'+str(seed)+'.npy', return_store)
+					torch.save(self.actor.state_dict(), 'actor_ddpg.pt')
+					np.save('returns_ddpg.npy', return_store)
+					np.save('buffer_ddpg.npy', self.ReplayBuffer.buffer)
+
 					if i % 5000 == 0:
 						plt.plot(return_store)
 						plt.xlabel('Iterations (x100)')
 						plt.ylabel('Discounted Returns')
-						plt.title('Question 1 - Discounted Returns vs Iterations')
-						plt.savefig('Question1_seed_'+str(seed)+'.png')
+						plt.title('DDPG - Discounted Returns vs Iterations')
+						plt.savefig('ddpg.png')
 						plt.close()
 
 			self.update_target_networks()
 
-		torch.save(self.actor.state_dict(), 'actor_seed_'+str(seed)+'.pt')
-		np.save('returns_seed_'+str(seed)+'.npy', return_store)
-		torch.save(self.actor_target.state_dict(), 'actor_target.pt')
+		torch.save(self.actor.state_dict(), 'actor_ddpg.pt')
+		np.save('returns_ddpg.npy', return_store)
+		np.save('buffer_ddpg.npy', self.ReplayBuffer.buffer)
+		torch.save(self.actor_target.state_dict(), 'actor_target_ddpg.pt')
 
 		plt.plot(return_store)
 		plt.xlabel('Iterations (x100)')
 		plt.ylabel('Discounted Returns')
-		plt.title('Question 1 - Discounted Returns vs Iterations')
-		plt.savefig('Question1_seed_'+str(seed)+'.png')
+		plt.title('DDPG - Discounted Returns vs Iterations')
+		plt.savefig('ddpg.png')
 		plt.close()
 		# plt.show()
 
 
 if __name__ == "__main__":
 	# Define the environment
-	env = gym.make("modified_gym_env:ReacherPyBulletEnv-v1", rand_init=False)
+	env = gym.make("modified_gym_env:ReacherPyBulletEnv-v1", rand_init='full')
+	env.seed(seed)
 
 	observation = env.reset()
 	ddpg_object = DDPG(
