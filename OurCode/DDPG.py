@@ -237,9 +237,9 @@ class DDPG():
 				if i % 5000 == 0:
 					stop = time.time()
 					print(i, "Time: ", int(stop-start))
-					torch.save(self.actor.state_dict(), env_name+'/actor_ddpg.pt')
-					np.save(env_name+'/returns_ddpg.npy', return_store)
-					np.save(env_name+'/buffer_ddpg.npy', self.ReplayBuffer.buffer)
+					torch.save(self.actor.state_dict(), env_name+'/actor_ddpg_tmp.pt')
+					np.save(env_name+'/returns_ddpg_tmp.npy', return_store)
+					np.save(env_name+'/buffer_ddpg_tmp.npy', self.ReplayBuffer.buffer)
 					start = stop
 
 					if i % 5000 == 0:
@@ -268,7 +268,7 @@ class DDPG():
 
 if __name__ == "__main__":
 	# Define the environment
-	env_name = "ReacherPyBulletEnv-v0"
+	env_name = "HopperPyBulletEnv-v0"
 	env = gym.make(env_name)
 	env.seed(seed)
 
