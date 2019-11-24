@@ -48,7 +48,7 @@ class Replay():
 				state = env.reset()
 			action = np.random.uniform(-1, 1, action_dim)
 			next_state, reward, done, _ = env.step(action)
-			self.buffer.append((state, action, [reward], next_state))
+			self.buffer.append((state, next_state, action, reward, done))
 			state = next_state
 
 	def buffer_add(self, exp):
@@ -69,12 +69,12 @@ class Replay():
 		action = []
 		reward = []
 		next_state = []
-		for s, a, r, ns in random.sample(self.buffer, N):
+		for s, ns, a, r, _ in random.sample(self.buffer, N):
 			state.append(s)
 			action.append(a)
 			reward.append(r)
 			next_state.append(ns)
-		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(), torch.FloatTensor(reward).cuda(), torch.FloatTensor(next_state).cuda()
+		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(), torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(), torch.FloatTensor(next_state).cuda()
 
 class Actor(nn.Module):
 	def __init__(self, state_dim, action_dim):
@@ -214,7 +214,7 @@ class DDPG():
 			action = self.actor(torch.from_numpy(state).type(torch.FloatTensor).cuda()).cpu().detach().numpy()+np.random.normal(0, np.sqrt(0.1), size=self.action_dim)
 			next_state, reward, done, _ = self.env.step(action)
 
-			self.ReplayBuffer.buffer_add((state, action, [reward], next_state))
+			self.ReplayBuffer.buffer_add((state, next_state, action, reward, done))
 			state = next_state
 			
 			states, actions, rewards, next_states = self.ReplayBuffer.buffer_sample(self.batch_size)
