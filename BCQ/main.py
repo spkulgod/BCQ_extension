@@ -4,6 +4,9 @@ import torch
 import argparse
 import os
 
+import pybullet
+import pybulletgym.envs
+
 import time
 import matplotlib.pyplot as plt
 
@@ -38,7 +41,8 @@ def evaluate_policy(policy, eval_episodes=10):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--env_name", default="modified_gym_env:ReacherPyBulletEnv-v1")				# OpenAI gym environment name
+	env_name = "ReacherPyBulletEnv-v0"
+	parser.add_argument("--env_name", default=env_name)												# OpenAI gym environment name
 	parser.add_argument("--seed", default=0, type=int)												# Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--buffer_type", default="Robust")											# Prepends name to filename.
 	parser.add_argument("--eval_freq", default=5e3, type=float)										# How often (time steps) we evaluate
@@ -47,14 +51,16 @@ if __name__ == "__main__":
 
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
 	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
-	buffer_name = "buffer_ddpg"
+	buffer_name = args.env_name+"/buffer_td3"
 
 	print ("---------------------------------------")
 	print ("Settings: " + file_name)
 	print ("---------------------------------------")
 
-	if not os.path.exists("./results"):
-		os.makedirs("./results")
+	os.chdir('results')
+	if not os.path.exists(env_name):
+		os.makedirs('./'+env_name)
+	os.chdir('../')
 
 	env = gym.make(args.env_name)
 	env.render()
@@ -78,7 +84,18 @@ if __name__ == "__main__":
 	episode_num = 0
 	done = True 
 
-	torch.save(policy.actor.state_dict(), './results/bcq.pt')
+	np.save("./results/"+ args.env_name + '/'+ file_name, evaluations)
+
+	torch.save(policy.actor.state_dict(), './results/' + args.env_name + '/bcq_actor.pt')
+	torch.save(policy.critic.state_dict(), './results/' + args.env_name + '/bcq_critic.pt')
+	torch.save(policy.vae.state_dict(), './results/' + args.env_name + '/bcq_vae.pt')
+	
+	plt.plot(evaluations)
+	plt.xlabel('Iterations (x5000)')
+	plt.ylabel('Average Reward')
+	plt.title('BCQ - Average Reward vs Iterations')
+	plt.savefig('./results/' + args.env_name + '/bcq.png')
+	plt.close()
 
 	training_iters = 0
 	while training_iters < args.max_timesteps: 
@@ -87,21 +104,21 @@ if __name__ == "__main__":
 		stop = time.time()
 
 		evaluations.append(evaluate_policy(policy))
-		np.save("./results/" + file_name, evaluations)
+		np.save("./results/"+ args.env_name + '/'+ file_name, evaluations)
 
-		torch.save(policy.actor.state_dict(), './results/bcq_actor.pt')
-		torch.save(policy.critic.state_dict(), './results/bcq_critic.pt')
-		torch.save(policy.vae.state_dict(), './results/bcq_vae.pt')
+		torch.save(policy.actor.state_dict(), './results/' + args.env_name + '/bcq_actor.pt')
+		torch.save(policy.critic.state_dict(), './results/' + args.env_name + '/bcq_critic.pt')
+		torch.save(policy.vae.state_dict(), './results/' + args.env_name + '/bcq_vae.pt')
 		
 		plt.plot(evaluations)
 		plt.xlabel('Iterations (x5000)')
 		plt.ylabel('Average Reward')
 		plt.title('BCQ - Average Reward vs Iterations')
-		plt.savefig('./results/bcq.png')
+		plt.savefig('./results/' + args.env_name + '/bcq.png')
 		plt.close()
 
 		training_iters += args.eval_freq
 		print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
 
-	torch.save(policy.actor_target.state_dict(), './results/bcq_actor_target.pt')
-	torch.save(policy.critic_target.state_dict(), './results/bcq_critic_target.pt')
+		torch.save(policy.actor_target.state_dict(), './results/' + args.env_name + '/bcq_actor_target.pt')
+		torch.save(policy.critic_target.state_dict(), './results/' + args.env_name + '/bcq_critic_target.pt')
