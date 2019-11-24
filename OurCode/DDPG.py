@@ -90,9 +90,9 @@ class Actor(nn.Module):
 		self.fc1 = nn.Linear(state_dim, hl1)
 		self.fc2 = nn.Linear(hl1, hl2)
 		self.fc3 = nn.Linear(hl2, action_dim)
-		self.fc1.weight.data.uniform_(-1/np.sqrt(state_dim), 1/np.sqrt(state_dim))
-		self.fc2.weight.data.uniform_(-1/np.sqrt(hl1), 1/np.sqrt(hl1))
-		self.fc3.weight.data.uniform_(-3e-3, 3e-3)
+		#self.fc1.weight.data.uniform_(-1/np.sqrt(state_dim), 1/np.sqrt(state_dim))
+		#self.fc2.weight.data.uniform_(-1/np.sqrt(hl1), 1/np.sqrt(hl1))
+		#self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 
 	def forward(self, state):
 		"""
@@ -118,9 +118,9 @@ class Critic(nn.Module):
 		self.fc1 = nn.Linear(state_dim, hl1)
 		self.fc2 = nn.Linear(hl1 + action_dim, hl2)
 		self.fc3 = nn.Linear(hl2, 1)
-		self.fc1.weight.data.uniform_(-1/np.sqrt(state_dim), 1/np.sqrt(state_dim))
-		self.fc2.weight.data.uniform_(-1/np.sqrt(hl1 + action_dim), 1/np.sqrt(hl1 + action_dim))
-		self.fc3.weight.data.uniform_(-3e-3, 3e-3)
+		# self.fc1.weight.data.uniform_(-1/np.sqrt(state_dim), 1/np.sqrt(state_dim))
+		# self.fc2.weight.data.uniform_(-1/np.sqrt(hl1 + action_dim), 1/np.sqrt(hl1 + action_dim))
+		# self.fc3.weight.data.uniform_(-3e-3, 3e-3)
 		
 	def forward(self, state, action):
 		"""
@@ -172,7 +172,7 @@ class DDPG():
 			target_param.data.copy_(param.data)
 
 		self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=actor_lr)
-		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr)
+		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr, weight_decay = 1e-2)
 
 		self.ReplayBuffer = Replay(1000000, 1000, state_dim, action_dim, self.env)
 
@@ -268,7 +268,7 @@ class DDPG():
 
 if __name__ == "__main__":
 	# Define the environment
-	env_name = "HopperPyBulletEnv-v0"
+	env_name = "Hopper-v2"
 	env = gym.make(env_name)
 	env.seed(seed)
 
