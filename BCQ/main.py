@@ -18,6 +18,7 @@ def evaluate_policy(policy, eval_episodes=10):
 	avg_epis_size = 0
 	for _ in range(eval_episodes):
 		obs = env.reset()
+		print(obs)
 		done = False
 		while not done:
 			action = policy.select_action(np.array(obs))
@@ -88,7 +89,10 @@ if __name__ == "__main__":
 		evaluations.append(evaluate_policy(policy))
 		np.save("./results/" + file_name, evaluations)
 
-		torch.save(policy.actor.state_dict(), './results/bcq.pt')
+		torch.save(policy.actor.state_dict(), './results/bcq_actor.pt')
+		torch.save(policy.critic.state_dict(), './results/bcq_critic.pt')
+		torch.save(policy.vae.state_dict(), './results/bcq_vae.pt')
+		
 		plt.plot(evaluations)
 		plt.xlabel('Iterations (x5000)')
 		plt.ylabel('Average Reward')
@@ -99,4 +103,5 @@ if __name__ == "__main__":
 		training_iters += args.eval_freq
 		print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
 
-	torch.save(policy.actor_target.state_dict(), './results/bcq_target.pt')
+	torch.save(policy.actor_target.state_dict(), './results/bcq_actor_target.pt')
+	torch.save(policy.critic_target.state_dict(), './results/bcq_critic_target.pt')
