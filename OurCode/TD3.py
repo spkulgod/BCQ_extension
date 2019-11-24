@@ -133,7 +133,7 @@ class Critic(nn.Module):
 		state = self.fc3(state)
 		return state
 
-class DDPG():
+class TD3():
 	def __init__(
 			self,
 			env,
@@ -257,9 +257,9 @@ class DDPG():
 				if i % 5000 == 0:
 					stop = time.time()
 					print(i, "Time: ", int(stop-start))
-					torch.save(self.actor.state_dict(), env_name+'/actor_td3.pt')
-					np.save(env_name+'/returns_td3.npy', return_store)
-					np.save(env_name+'/buffer_td3.npy', self.ReplayBuffer.buffer)
+					torch.save(self.actor.state_dict(), env_name+'/actor_td3_tmp.pt')
+					np.save(env_name+'/returns_td3_tmp.npy', return_store)
+					np.save(env_name+'/buffer_td3_tmp.npy', self.ReplayBuffer.buffer)
 					start = stop
 
 					if i % 5000 == 0:
@@ -292,7 +292,7 @@ if __name__ == "__main__":
 	env.seed(seed)
 
 	observation = env.reset()
-	ddpg_object = DDPG(
+	td3_object = TD3(
 		env,
 		env.action_space.shape[0],
 		observation.shape[0],
@@ -303,13 +303,13 @@ if __name__ == "__main__":
 	)
  
 	# Train the policy
-	ddpg_object.train(400000)
+	td3_object.train(1000000)
 	# Evaluate the final policy
 	state = env.reset()
 
 	done = False
 	while not done:
-		action = ddpg_object.actor(torch.from_numpy(state).type(torch.FloatTensor).cuda())
+		action = td3_object.actor(torch.from_numpy(state).type(torch.FloatTensor).cuda())
 		next_state, reward, done, _ = env.step(action.cpu().detach().numpy())
 		time.sleep(0.1)
 		state = next_state
