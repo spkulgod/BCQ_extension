@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import time
 import torch.nn as nn
+import os
 
 import gym
 import pybullet
@@ -287,7 +288,9 @@ class TD3():
 
 if __name__ == "__main__":
 	# Define the environment
-	env_name = "ReacherPyBulletEnv-v0"
+	env_name = "Reacher-v2"
+	if not os.path.exists("./"+env_name):
+		os.makedirs("./"+env_name)
 	env = gym.make(env_name)
 	env.seed(seed)
 

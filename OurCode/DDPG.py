@@ -269,6 +269,8 @@ class DDPG():
 if __name__ == "__main__":
 	# Define the environment
 	env_name = "Hopper-v2"
+	if not os.path.exists("./"+env_name):
+		os.makedirs("./"+env_name)
 	env = gym.make(env_name)
 	env.seed(seed)
 
