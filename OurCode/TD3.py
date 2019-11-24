@@ -214,6 +214,7 @@ class DDPG():
 		MSELoss2 = nn.MSELoss()
 		noise = Normal(0, np.sqrt(0.2))
 		return_store = []
+		start = time.time()
 
 		done = False
 		state = self.env.reset()
@@ -254,10 +255,13 @@ class DDPG():
 				return_store.append(self.evaluate())
 
 				if i % 5000 == 0:
-					print(i)
+					stop = time.time()
+					print(i, "Time: ", int(stop-start))
 					torch.save(self.actor.state_dict(), env_name+'/actor_td3.pt')
 					np.save(env_name+'/returns_td3.npy', return_store)
 					np.save(env_name+'/buffer_td3.npy', self.ReplayBuffer.buffer)
+					start = stop
+
 					if i % 5000 == 0:
 						plt.plot(return_store)
 						plt.xlabel('Iterations (x100)')
