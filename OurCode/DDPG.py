@@ -174,7 +174,7 @@ class DDPG():
 		self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=actor_lr)
 		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr)
 
-		self.ReplayBuffer = Replay(10000, 1000, state_dim, action_dim, self.env)
+		self.ReplayBuffer = Replay(1000000, 1000, state_dim, action_dim, self.env)
 
 	def update_target_networks(self):
 		"""
@@ -204,7 +204,7 @@ class DDPG():
 		"""
 		MSELoss = nn.MSELoss()
 		return_store = []
-
+		start = time.time()
 		done = False
 		state = self.env.reset()
 		for i in range(num_steps):
@@ -235,10 +235,12 @@ class DDPG():
 				return_store.append(self.evaluate())
 
 				if i % 5000 == 0:
-					print(i)
+					stop = time.time()
+					print(i, "Time: ", int(stop-start))
 					torch.save(self.actor.state_dict(), 'actor_ddpg.pt')
 					np.save('returns_ddpg.npy', return_store)
 					np.save('buffer_ddpg.npy', self.ReplayBuffer.buffer)
+					start = stop
 
 					if i % 5000 == 0:
 						plt.plot(return_store)
@@ -281,7 +283,7 @@ if __name__ == "__main__":
 	)
  
 	# Train the policy
-	ddpg_object.train(200000)
+	ddpg_object.train(400000)
 
 	# Evaluate the final policy
 	state = env.reset()
