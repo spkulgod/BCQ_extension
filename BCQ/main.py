@@ -4,6 +4,9 @@ import torch
 import argparse
 import os
 
+import time
+import matplotlib.pyplot as plt
+
 import utils
 import DDPG
 import BCQ
@@ -12,6 +15,7 @@ import BCQ
 # Runs policy for X episodes and returns average reward
 def evaluate_policy(policy, eval_episodes=10):
 	avg_reward = 0.
+	avg_epis_size = 0
 	for _ in range(eval_episodes):
 		obs = env.reset()
 		done = False
@@ -19,11 +23,13 @@ def evaluate_policy(policy, eval_episodes=10):
 			action = policy.select_action(np.array(obs))
 			obs, reward, done, _ = env.step(action)
 			avg_reward += reward
+			avg_epis_size += 1
 
 	avg_reward /= eval_episodes
+	avg_epis_size /= eval_episodes
 
 	print ("---------------------------------------")
-	print ("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
+	print ("Evaluation over %d episodes: %f episode length %f" % (eval_episodes, avg_reward, avg_epis_size))
 	print ("---------------------------------------")
 	return avg_reward
 
@@ -31,15 +37,17 @@ def evaluate_policy(policy, eval_episodes=10):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--env_name", default="Hopper-v2")				# OpenAI gym environment name
-	parser.add_argument("--seed", default=0, type=int)					# Sets Gym, PyTorch and Numpy seeds
-	parser.add_argument("--buffer_type", default="Robust")				# Prepends name to filename.
-	parser.add_argument("--eval_freq", default=5e3, type=float)			# How often (time steps) we evaluate
-	parser.add_argument("--max_timesteps", default=1e6, type=float)		# Max time steps to run environment for
+	parser.add_argument("--env_name", default="modified_gym_env:ReacherPyBulletEnv-v1")				# OpenAI gym environment name
+	parser.add_argument("--seed", default=0, type=int)												# Sets Gym, PyTorch and Numpy seeds
+	parser.add_argument("--buffer_type", default="Robust")											# Prepends name to filename.
+	parser.add_argument("--eval_freq", default=5e3, type=float)										# How often (time steps) we evaluate
+	parser.add_argument("--max_timesteps", default=1e6, type=float)									# Max time steps to run environment for
 	args = parser.parse_args()
 
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
-	buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
+	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
+	buffer_name = "buffer_td3"
+
 	print ("---------------------------------------")
 	print ("Settings: " + file_name)
 	print ("---------------------------------------")
@@ -69,12 +77,26 @@ if __name__ == "__main__":
 	episode_num = 0
 	done = True 
 
+	torch.save(policy.actor.state_dict(), './results/bcq.pt')
+
 	training_iters = 0
 	while training_iters < args.max_timesteps: 
+		start = time.time()
 		pol_vals = policy.train(replay_buffer, iterations=int(args.eval_freq))
+		stop = time.time()
 
 		evaluations.append(evaluate_policy(policy))
 		np.save("./results/" + file_name, evaluations)
 
+		torch.save(policy.actor.state_dict(), './results/bcq.pt')
+		plt.plot(evaluations)
+		plt.xlabel('Iterations (x5000)')
+		plt.ylabel('Average Reward')
+		plt.title('BCQ - Average Reward vs Iterations')
+		plt.savefig('./results/bcq.png')
+		plt.close()
+
 		training_iters += args.eval_freq
-		print ("Training iterations: " + str(training_iters))
+		print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
+
+	torch.save(policy.actor_target.state_dict(), './results/bcq_target.pt')
