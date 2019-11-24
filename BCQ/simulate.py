@@ -5,12 +5,16 @@ import gym
 import matplotlib.pyplot as plt
 import os
 
+import pybullet
+import pybulletgym.envs
+
 from BCQ import BCQ
 
-env = gym.make('modified_gym_env:ReacherPyBulletEnv-v1')
+env_name = 'ReacherPyBulletEnv-v0'
+env = gym.make(env_name)
 env.render()
 
-folder = 'results/'
+folder = 'results/'+env_name+'/'
 
 bcq = BCQ(env.reset().shape[0], env.action_space.shape[0], float(env.action_space.high[0]))
 bcq.actor.load_state_dict(torch.load(folder+'bcq_actor.pt', map_location=torch.device('cpu')))
