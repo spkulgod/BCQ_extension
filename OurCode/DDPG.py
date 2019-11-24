@@ -49,7 +49,7 @@ class Replay():
 				state = env.reset()
 			action = np.random.uniform(-1, 1, action_dim)
 			next_state, reward, done, _ = env.step(action)
-			self.buffer.append((state, next_state, action, reward, done))
+			self.buffer.append((state, next_state, action, reward,1-done))
 			state = next_state
 
 	def buffer_add(self, exp):
@@ -70,12 +70,17 @@ class Replay():
 		action = []
 		reward = []
 		next_state = []
-		for s, ns, a, r, _ in random.sample(self.buffer, N):
+		done = []
+		for s, ns, a, r, d in random.sample(self.buffer, N):
 			state.append(s)
 			action.append(a)
 			reward.append(r)
 			next_state.append(ns)
-		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(), torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(), torch.FloatTensor(next_state).cuda()
+			done.append(d)
+		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(),\
+		 		torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(),\
+				torch.FloatTensor(next_state).cuda(),\
+				torch.FloatTensor(done).resize_((len(done), 1)).cuda()
 
 class Actor(nn.Module):
 	def __init__(self, state_dim, action_dim):
@@ -173,7 +178,7 @@ class DDPG():
 			target_param.data.copy_(param.data)
 
 		self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=actor_lr)
-		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr)
+		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr, weight_decay = 1e-2)
 
 		self.ReplayBuffer = Replay(1000000, 1000, state_dim, action_dim, self.env)
 
@@ -215,11 +220,11 @@ class DDPG():
 			action = self.actor(torch.from_numpy(state).type(torch.FloatTensor).cuda()).cpu().detach().numpy()+np.random.normal(0, np.sqrt(0.1), size=self.action_dim)
 			next_state, reward, done, _ = self.env.step(action)
 
-			self.ReplayBuffer.buffer_add((state, next_state, action, reward, done))
+			self.ReplayBuffer.buffer_add((state, next_state, action, reward, 1-done))
 			state = next_state
 			
-			states, actions, rewards, next_states = self.ReplayBuffer.buffer_sample(self.batch_size)
-			y = rewards + self.gamma * self.critic_target(next_states, self.actor_target(next_states).detach()).detach()
+			states, actions, rewards, next_states, dones = self.ReplayBuffer.buffer_sample(self.batch_size)
+			y = rewards + dones*self.gamma * self.critic_target(next_states, self.actor_target(next_states).detach()).detach()
 			Q = self.critic(states, actions)
 
 			self.optimizer_critic.zero_grad()
