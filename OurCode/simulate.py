@@ -7,7 +7,7 @@ import os
 
 from TD3 import Actor
 
-env = gym.make('modified_gym_env:ReacherPyBulletEnv-v1', rand_init='full')
+env = gym.make('modified_gym_env:ReacherPyBulletEnv-v1')
 env.render()
 
 model = 'actor_td3.pt'

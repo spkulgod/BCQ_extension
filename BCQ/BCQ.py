@@ -136,6 +136,11 @@ class BCQ(object):
 
 			# Sample replay buffer / batch
 			state_np, next_state_np, action, reward, done = replay_buffer.sample(batch_size)
+			# print(state_np)
+			# print(next_state_np)
+			# print(action)
+			# print(reward)
+			# print(done)
 			state 		= torch.FloatTensor(state_np).to(device)
 			action 		= torch.FloatTensor(action).to(device)
 			next_state 	= torch.FloatTensor(next_state_np).to(device)

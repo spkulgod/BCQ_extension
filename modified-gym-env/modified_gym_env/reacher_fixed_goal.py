@@ -7,7 +7,8 @@ class Reacher(MJCFBasedRobot):
 
 
     def __init__(self, rand_init='full'):
-        MJCFBasedRobot.__init__(self, 'reacher.xml', 'body0', action_dim=2, obs_dim=9)
+
+        MJCFBasedRobot.__init__(self, 'reacher.xml', 'body0', action_dim=2, obs_dim=8)
         self.rand_init = rand_init
 
     def robot_specific_reset(self, bullet_client):
@@ -19,6 +20,7 @@ class Reacher(MJCFBasedRobot):
         self.target = self.parts["target"]
         self.central_joint = self.jdict["joint0"]
         self.elbow_joint = self.jdict["joint1"]
+
         # self.central_joint.reset_current_position(self.np_random.uniform(low=-np.pi/2, high=np.pi/2), 0)
         if self.rand_init == 'full':
             self.central_joint.reset_current_position(self.np_random.uniform(low=-np.pi, high=np.pi), 0)
