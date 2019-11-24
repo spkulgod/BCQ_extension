@@ -255,35 +255,36 @@ class DDPG():
 
 				if i % 5000 == 0:
 					print(i)
-					torch.save(self.actor.state_dict(), 'actor_td3.pt')
-					np.save('returns_td3.npy', return_store)
-					np.save('buffer_td3.npy', self.ReplayBuffer.buffer)
+					torch.save(self.actor.state_dict(), env_name+'/actor_td3.pt')
+					np.save(env_name+'/returns_td3.npy', return_store)
+					np.save(env_name+'/buffer_td3.npy', self.ReplayBuffer.buffer)
 					if i % 5000 == 0:
 						plt.plot(return_store)
 						plt.xlabel('Iterations (x100)')
 						plt.ylabel('Discounted Returns')
 						plt.title('TD3 - Discounted Returns vs Iterations')
-						plt.savefig('td3.png')
+						plt.savefig(env_name+'/td3.png')
 						plt.close()
 
 
-		torch.save(self.actor.state_dict(), 'actor_td3.pt')
-		np.save('returns_td3.npy', return_store)
-		torch.save(self.actor_target.state_dict(), 'actor_target_td3.pt')
-		np.save('buffer_td3.npy', self.ReplayBuffer.buffer)
+		torch.save(self.actor.state_dict(), env_name+'/actor_td3.pt')
+		np.save(env_name+'/returns_td3.npy', return_store)
+		torch.save(self.actor_target.state_dict(), env_name+'/actor_target_td3.pt')
+		np.save(env_name+'/buffer_td3.npy', self.ReplayBuffer.buffer)
 
 		plt.plot(return_store)
 		plt.xlabel('Iterations (x100)')
 		plt.ylabel('Discounted Returns')
 		plt.title('TD3 - Discounted Returns vs Iterations')
-		plt.savefig('td3.png')
+		plt.savefig(env_name+'/td3.png')
 		plt.close()
 		# plt.show()
 	
 
 if __name__ == "__main__":
 	# Define the environment
-	env = gym.make("modified_gym_env:ReacherPyBulletEnv-v1", rand_init='full')
+	env_name = "ReacherPyBulletEnv-v0"
+	env = gym.make(env_name)
 	env.seed(seed)
 
 	observation = env.reset()

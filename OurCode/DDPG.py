@@ -269,7 +269,7 @@ class DDPG():
 if __name__ == "__main__":
 	# Define the environment
 	env_name = "ReacherPyBulletEnv-v0"
-	env = gym.make("ReacherPyBulletEnv-v0")
+	env = gym.make(env_name)
 	env.seed(seed)
 
 	observation = env.reset()
