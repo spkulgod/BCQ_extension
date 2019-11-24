@@ -18,6 +18,7 @@ def evaluate_policy(policy, eval_episodes=10):
 	avg_epis_size = 0
 	for _ in range(eval_episodes):
 		obs = env.reset()
+		print(obs)
 		done = False
 		while not done:
 			action = policy.select_action(np.array(obs))
@@ -46,7 +47,7 @@ if __name__ == "__main__":
 
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
 	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
-	buffer_name = "buffer_td3"
+	buffer_name = "buffer_ddpg"
 
 	print ("---------------------------------------")
 	print ("Settings: " + file_name)
@@ -56,7 +57,7 @@ if __name__ == "__main__":
 		os.makedirs("./results")
 
 	env = gym.make(args.env_name)
-
+	env.render()
 	env.seed(args.seed)
 	torch.manual_seed(args.seed)
 	np.random.seed(args.seed)
