@@ -21,7 +21,6 @@ def evaluate_policy(policy, eval_episodes=10):
 	avg_epis_size = 0
 	for _ in range(eval_episodes):
 		obs = env.reset()
-		print(obs)
 		done = False
 		while not done:
 			action = policy.select_action(np.array(obs))
@@ -63,7 +62,6 @@ if __name__ == "__main__":
 	os.chdir('../')
 
 	env = gym.make(args.env_name)
-	env.render()
 	env.seed(args.seed)
 	torch.manual_seed(args.seed)
 	np.random.seed(args.seed)
