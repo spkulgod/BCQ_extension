@@ -228,7 +228,7 @@ class DDPG():
 			self.optimizer_critic.step()
 
 			self.optimizer_actor.zero_grad()
-			loss_actor = self.critic(states, self.actor(states)).mean()
+			loss_actor = -self.critic(states, self.actor(states)).mean()
 			loss_actor.backward()
 			self.optimizer_actor.step()
 
