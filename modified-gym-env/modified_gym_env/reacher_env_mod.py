@@ -6,7 +6,7 @@ from modified_gym_env.reacher_fixed_goal import Reacher
 
 
 class ReacherBulletEnv(BaseBulletEnv):
-    def __init__(self, rand_init=True):
+    def __init__(self, rand_init='full'):
         self.robot = Reacher(rand_init)
         BaseBulletEnv.__init__(self, self.robot)
 

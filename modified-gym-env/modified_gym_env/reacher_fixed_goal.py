@@ -6,7 +6,7 @@ class Reacher(MJCFBasedRobot):
     RADIUS_LIMIT = 0.21
 
 
-    def __init__(self, rand_init=False):
+    def __init__(self, rand_init='full'):
         MJCFBasedRobot.__init__(self, 'reacher.xml', 'body0', action_dim=2, obs_dim=9)
         self.rand_init = rand_init
 
