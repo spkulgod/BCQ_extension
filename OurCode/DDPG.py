@@ -172,7 +172,7 @@ class DDPG():
 			target_param.data.copy_(param.data)
 
 		self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=actor_lr)
-		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr, weight_decay = 1e-2)
+		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr)
 
 		self.ReplayBuffer = Replay(1000000, 1000, state_dim, action_dim, self.env)
 
