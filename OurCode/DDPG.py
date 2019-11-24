@@ -174,7 +174,7 @@ class DDPG():
 		self.optimizer_actor = optim.Adam(self.actor.parameters(), lr=actor_lr)
 		self.optimizer_critic = optim.Adam(self.critic.parameters(), lr=critic_lr)
 
-		self.ReplayBuffer = Replay(10000, 1000, state_dim, action_dim, self.env)
+		self.ReplayBuffer = Replay(1000000, 1000, state_dim, action_dim, self.env)
 
 	def update_target_networks(self):
 		"""
@@ -281,7 +281,7 @@ if __name__ == "__main__":
 	)
  
 	# Train the policy
-	ddpg_object.train(200000)
+	ddpg_object.train(400000)
 
 	# Evaluate the final policy
 	state = env.reset()
