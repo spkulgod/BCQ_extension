@@ -204,7 +204,7 @@ class DDPG():
 		"""
 		MSELoss = nn.MSELoss()
 		return_store = []
-
+		start = time.time()
 		done = False
 		state = self.env.reset()
 		for i in range(num_steps):
@@ -235,10 +235,12 @@ class DDPG():
 				return_store.append(self.evaluate())
 
 				if i % 5000 == 0:
-					print(i)
+					stop = time.time()
+					print(i, "Time: ", int(stop-start))
 					torch.save(self.actor.state_dict(), 'actor_ddpg.pt')
 					np.save('returns_ddpg.npy', return_store)
 					np.save('buffer_ddpg.npy', self.ReplayBuffer.buffer)
+					start = stop
 
 					if i % 5000 == 0:
 						plt.plot(return_store)
