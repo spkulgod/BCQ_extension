@@ -5,36 +5,12 @@ import gym
 import matplotlib.pyplot as plt
 import os
 
-import numpy as np
-import torch
-import torch.nn as nn
-from torch.autograd import Variable
-import torch.nn.functional as F
-
 from TD3 import Actor
 
-# class Actor(nn.Module):
-# 	def __init__(self, state_dim, action_dim, max_action):
-# 		super(Actor, self).__init__()
-
-# 		self.l1 = nn.Linear(state_dim, 400)
-# 		self.l2 = nn.Linear(400, 300)
-# 		self.l3 = nn.Linear(300, action_dim)
-		
-# 		self.max_action = max_action
-
-	
-# 	def forward(self, state):
-# 		a = F.relu(self.l1(state))
-# 		a = F.relu(self.l2(a))
-# 		a = self.max_action * torch.tanh(self.l3(a)) 
-# 		return a
-
-env_name = "Reacher-v2"
+env_name = "ReacherPyBulletEnv-v0"
 
 env = gym.make(env_name)
 env.render()
-
 model = env_name+'/actor_td3_tmp.pt'
 
 actor = Actor(env.reset().shape[0], env.action_space.shape[0])
@@ -57,7 +33,7 @@ while True:
 		num += 1
 		state = torch.from_numpy(state).type(torch.FloatTensor)
 		action = actor(state)
-		env.render()
 		state, reward, done, _ = env.step(action.detach().numpy())
+		env.render()
 		time.sleep(0.01)
 	print(num)

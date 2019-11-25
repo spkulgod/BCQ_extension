@@ -268,7 +268,7 @@ class TD3():
 						plt.xlabel('Iterations (x100)')
 						plt.ylabel('Discounted Returns')
 						plt.title('TD3 - Discounted Returns vs Iterations')
-						plt.savefig(env_name+'/td3.png')
+						plt.savefig(env_name+'/td3_tmp.png')
 						plt.close()
 
 

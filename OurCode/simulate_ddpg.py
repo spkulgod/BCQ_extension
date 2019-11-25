@@ -35,6 +35,7 @@ while True:
 		num += 1
 		state = torch.from_numpy(state).type(torch.FloatTensor)
 		action = actor(state)
+		env.render()
 		state, reward, done, _ = env.step(action.detach().numpy())
 		env.render()
 		time.sleep(0.01)
