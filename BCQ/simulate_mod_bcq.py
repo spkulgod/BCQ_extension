@@ -8,30 +8,31 @@ import os
 import pybullet
 import pybulletgym.envs
 
-from BCQ import BCQ
+from BCQ_modified import BCQ
 
 env_name = 'ReacherPyBulletEnv-v0'
+# env_name = "modified_gym_env:ReacherPyBulletEnv-v1"
 env = gym.make(env_name)
 env.render()
 
-folder = 'results/'+env_name+'/'
+folder = 'results_modified/'+env_name+'/'
 
 bcq = BCQ(env.reset().shape[0], env.action_space.shape[0], float(env.action_space.high[0]))
-bcq.actor.load_state_dict(torch.load(folder+'bcq_actor.pt', map_location=torch.device('cpu')))
-bcq.actor.eval()
-bcq.critic.load_state_dict(torch.load(folder+'bcq_critic.pt', map_location=torch.device('cpu')))
+bcq.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp.pt', map_location=torch.device('cpu')))
 bcq.critic.eval()
-bcq.vae.load_state_dict(torch.load(folder+'bcq_vae.pt', map_location=torch.device('cpu')))
+bcq.vae.load_state_dict(torch.load(folder+'bcq_mod_vae_tmp.pt', map_location=torch.device('cpu')))
 bcq.vae.eval()
 
-model = folder+'bcq_actor.pt'
+model = folder+'bcq_mod_vae_tmp.pt'
 last_update_time = os.stat(model)[8]
 
 while True:
 	cur_time = os.stat(model)[8]
 	if cur_time != last_update_time:
-		bcq.actor.load_state_dict(torch.load(model, map_location=torch.device('cpu')))
-		bcq.actor.eval()
+		bcq.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp.pt', map_location=torch.device('cpu')))
+		bcq.critic.eval()
+		bcq.vae.load_state_dict(torch.load(folder+'bcq_mod_vae_tmp.pt', map_location=torch.device('cpu')))
+		bcq.vae.eval()
 		last_update_time = cur_time
 
 	time.sleep(0.5)

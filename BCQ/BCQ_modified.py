@@ -8,21 +8,21 @@ import utils
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Actor(nn.Module):
-	def __init__(self, state_dim, action_dim, max_action):
-		super(Actor, self).__init__()
-		self.l1 = nn.Linear(state_dim + action_dim, 400)
-		self.l2 = nn.Linear(400, 300)
-		self.l3 = nn.Linear(300, action_dim)
+# class Actor(nn.Module):
+# 	def __init__(self, state_dim, action_dim, max_action):
+# 		super(Actor, self).__init__()
+# 		self.l1 = nn.Linear(state_dim + action_dim, 400)
+# 		self.l2 = nn.Linear(400, 300)
+# 		self.l3 = nn.Linear(300, action_dim)
 		
-		self.max_action = max_action
+# 		self.max_action = max_action
 
 
-	def forward(self, state, action):
-		a = F.relu(self.l1(torch.cat([state, action], 1)))
-		a = F.relu(self.l2(a))
-		a = 0.05 * self.max_action * torch.tanh(self.l3(a))
-		return (a + action).clamp(-self.max_action, self.max_action)
+# 	def forward(self, state, action):
+# 		a = F.relu(self.l1(torch.cat([state, action], 1)))
+# 		a = F.relu(self.l2(a))
+# 		a = 0.05 * self.max_action * torch.tanh(self.l3(a))
+# 		return (a + action).clamp(-self.max_action, self.max_action)
 
 
 class Critic(nn.Module):
@@ -104,10 +104,10 @@ class BCQ(object):
 
 		latent_dim = action_dim * 2
 
-		self.actor = Actor(state_dim, action_dim, max_action).to(device)
-		self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
-		self.actor_target.load_state_dict(self.actor.state_dict())
-		self.actor_optimizer = torch.optim.Adam(self.actor.parameters())
+		# self.actor = Actor(state_dim, action_dim, max_action).to(device)
+		# self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
+		# self.actor_target.load_state_dict(self.actor.state_dict())
+		# self.actor_optimizer = torch.optim.Adam(self.actor.parameters())
 
 		self.critic = Critic(state_dim, action_dim).to(device)
 		self.critic_target = Critic(state_dim, action_dim).to(device)
@@ -124,7 +124,8 @@ class BCQ(object):
 	def select_action(self, state):		
 		with torch.no_grad():
 			state = torch.FloatTensor(state.reshape(1, -1)).repeat(10, 1).to(device)
-			action = self.actor(state, self.vae.decode(state))
+			# action = self.actor(state, self.vae.decode(state))
+			action = self.vae.decode(state)
 			q1 = self.critic.q1(state, action)
 			ind = q1.max(0)[1]
 		return action[ind].cpu().data.numpy().flatten()
@@ -147,11 +148,11 @@ class BCQ(object):
 			recon, mean, std = self.vae(state, action)
 			recon_loss = F.mse_loss(recon, action)
 			KL_loss	= -0.5 * (1 + torch.log(std.pow(2)) - mean.pow(2) - std.pow(2)).mean()
-			vae_loss = recon_loss + 0.5 * KL_loss
+			# vae_loss = recon_loss + 0.5 * KL_loss
 
-			self.vae_optimizer.zero_grad()
-			vae_loss.backward()
-			self.vae_optimizer.step()
+			# self.vae_optimizer.zero_grad()
+			# vae_loss.backward()
+			# self.vae_optimizer.step()
 
 
 			# Critic Training
@@ -161,7 +162,8 @@ class BCQ(object):
 				state_rep = torch.FloatTensor(np.repeat(next_state_np, 10, axis=0)).to(device)
 				
 				# Compute value of perturbed actions sampled from the VAE
-				target_Q1, target_Q2 = self.critic_target(state_rep, self.actor_target(state_rep, self.vae.decode(state_rep)))
+				# target_Q1, target_Q2 = self.critic_target(state_rep, self.actor_target(state_rep, self.vae.decode(state_rep)))
+				target_Q1, target_Q2 = self.critic_target(state_rep, self.vae.decode(state_rep))
 
 				# Soft Clipped Double Q-learning 
 				target_Q = 0.75 * torch.min(target_Q1, target_Q2) + 0.25 * torch.max(target_Q1, target_Q2)
@@ -172,26 +174,34 @@ class BCQ(object):
 			current_Q1, current_Q2 = self.critic(state, action)
 			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
 
-			self.critic_optimizer.zero_grad()
-			critic_loss.backward()
-			self.critic_optimizer.step()
+			# self.critic_optimizer.zero_grad()
+			# critic_loss.backward()
+			# self.critic_optimizer.step()
 
+			k = 0.6
+			combined_loss = k * critic_loss + (1 - k) * recon_loss + 0.5 * KL_loss
+
+			self.critic_optimizer.zero_grad()
+			self.vae_optimizer.zero_grad()
+			combined_loss.backward()
+			self.critic_optimizer.step()
+			self.vae_optimizer.step()
 
 			# Pertubation Model / Action Training
-			sampled_actions = self.vae.decode(state)
-			perturbed_actions = self.actor(state, sampled_actions)
+			# sampled_actions = self.vae.decode(state)
+			# perturbed_actions = self.actor(state, sampled_actions)
 
 			# Update through DPG
-			actor_loss = -self.critic.q1(state, perturbed_actions).mean()
+			# actor_loss = -self.critic.q1(state, perturbed_actions).mean()
 		 	 
-			self.actor_optimizer.zero_grad()
-			actor_loss.backward()
-			self.actor_optimizer.step()
+			# self.actor_optimizer.zero_grad()
+			# actor_loss.backward()
+			# self.actor_optimizer.step()
 
 
 			# Update Target Networks 
 			for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
 				target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
-			for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
-				target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+			# for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
+			# 	target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
