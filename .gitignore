@@ -6,5 +6,6 @@
 **/OurCode/**/*.npy
 **/OurCode/**/*.pt
 **/OurCode/**/*.png
+**/MUJOCO_LOG.TXT
 
 
