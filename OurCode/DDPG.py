@@ -245,16 +245,17 @@ class DDPG():
 					print(i, "Time: ", int(stop-start))
 					torch.save(self.actor.state_dict(), env_name+'/actor_ddpg_tmp.pt')
 					np.save(env_name+'/returns_ddpg_tmp.npy', return_store)
-					np.save(env_name+'/buffer_ddpg_tmp.npy', self.ReplayBuffer.buffer)
 					start = stop
 
-					if i % 5000 == 0:
-						plt.plot(return_store)
-						plt.xlabel('Iterations (x100)')
-						plt.ylabel('Discounted Returns')
-						plt.title('DDPG - Discounted Returns vs Iterations')
-						plt.savefig(env_name+'/ddpg_tmp.png')
-						plt.close()
+					plt.plot(return_store)
+					plt.xlabel('Iterations (x100)')
+					plt.ylabel('Discounted Returns')
+					plt.title('DDPG - Discounted Returns vs Iterations')
+					plt.savefig(env_name+'/ddpg_tmp.png')
+					plt.close()
+
+					if i % 25000 == 0:
+						np.save(env_name+'/buffer_ddpg_tmp.npy', self.ReplayBuffer.buffer) 
 
 			self.update_target_networks()
 

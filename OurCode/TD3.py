@@ -51,7 +51,7 @@ class Replay():
 				state = env.reset()
 			action = np.random.uniform(-1, 1, action_dim)
 			next_state, reward, done, _ = env.step(action)
-			self.buffer.append((state, next_state, action, reward, done))
+			self.buffer.append((state, next_state, action, reward, 1-done))
 			state = next_state
 
 	def buffer_add(self, exp):
@@ -72,12 +72,17 @@ class Replay():
 		action = []
 		reward = []
 		next_state = []
-		for s, ns, a, r, _ in random.sample(self.buffer, N):
+		done = []
+		for s, ns, a, r, d in random.sample(self.buffer, N):
 			state.append(s)
 			action.append(a)
 			reward.append(r)
 			next_state.append(ns)
-		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(), torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(), torch.FloatTensor(next_state).cuda()
+		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(),\
+		 	torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(),\
+			torch.FloatTensor(next_state).cuda(),\
+			torch.FloatTensor(done).resize_((len(done), 1)).cuda()
+
 
 class Actor(nn.Module):
 	def __init__(self, state_dim, action_dim):
@@ -226,12 +231,12 @@ class TD3():
 			action = self.actor(torch.from_numpy(state).type(torch.FloatTensor).cuda()).cpu().detach().numpy()+np.random.normal(0, np.sqrt(0.1), size=self.action_dim)
 			next_state, reward, done, _ = self.env.step(action)
 
-			self.ReplayBuffer.buffer_add((state, next_state, action, reward, done))
+			self.ReplayBuffer.buffer_add((state, next_state, action, reward, 1-done))
 			state = next_state
 			
-			states, actions, rewards, next_states = self.ReplayBuffer.buffer_sample(self.batch_size)
+			states, actions, rewards, next_states, dones = self.ReplayBuffer.buffer_sample(self.batch_size)
 			action = (self.actor_target(next_states) + torch.clamp(noise.sample([next_states.shape[0], self.action_dim]), -0.5, 0.5).cuda()).detach()
-			y = rewards + self.gamma * torch.min(self.critic_target_1(next_states, action), self.critic_target_2(next_states, action)).detach() 
+			y = rewards + dones*self.gamma * torch.min(self.critic_target_1(next_states, action), self.critic_target_2(next_states, action)).detach() 
 			
 			Q1 = self.critic_1(states, actions)
 			Q2 = self.critic_2(states, actions)
@@ -260,16 +265,17 @@ class TD3():
 					print(i, "Time: ", int(stop-start))
 					torch.save(self.actor.state_dict(), env_name+'/actor_td3_tmp.pt')
 					np.save(env_name+'/returns_td3_tmp.npy', return_store)
-					np.save(env_name+'/buffer_td3_tmp.npy', self.ReplayBuffer.buffer)
 					start = stop
 
-					if i % 5000 == 0:
-						plt.plot(return_store)
-						plt.xlabel('Iterations (x100)')
-						plt.ylabel('Discounted Returns')
-						plt.title('TD3 - Discounted Returns vs Iterations')
-						plt.savefig(env_name+'/td3_tmp.png')
-						plt.close()
+					plt.plot(return_store)
+					plt.xlabel('Iterations (x100)')
+					plt.ylabel('Discounted Returns')
+					plt.title('TD3 - Discounted Returns vs Iterations')
+					plt.savefig(env_name+'/td3_tmp.png')
+					plt.close()
+					
+					if i % 25000 == 0:
+						np.save(env_name+'/buffer_td3_tmp.npy', self.ReplayBuffer.buffer)
 
 
 		torch.save(self.actor.state_dict(), env_name+'/actor_td3.pt')
