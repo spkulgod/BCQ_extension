@@ -78,6 +78,8 @@ class Replay():
 			action.append(a)
 			reward.append(r)
 			next_state.append(ns)
+			done.append(d)
+
 		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(),\
 		 	torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(),\
 			torch.FloatTensor(next_state).cuda(),\
@@ -294,7 +296,7 @@ class TD3():
 
 if __name__ == "__main__":
 	# Define the environment
-	env_name = "Reacher-v2"
+	env_name = "Hopper-v2"
 	if not os.path.exists("./"+env_name):
 		os.makedirs("./"+env_name)
 	env = gym.make(env_name)
