@@ -2,6 +2,7 @@
 **/__pycache__/**
 **/BCQ/**/*.npy
 **/BCQ/**/*.pt
+**/BCQ/**/*.pth
 **/BCQ/**/*.png
 **/OurCode/**/*.npy
 **/OurCode/**/*.pt

@@ -248,7 +248,7 @@ class DDPG():
 						plt.xlabel('Iterations (x100)')
 						plt.ylabel('Discounted Returns')
 						plt.title('DDPG - Discounted Returns vs Iterations')
-						plt.savefig(env_name+'/ddpg.png')
+						plt.savefig(env_name+'/ddpg_tmp.png')
 						plt.close()
 
 			self.update_target_networks()
