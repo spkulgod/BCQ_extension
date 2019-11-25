@@ -7,12 +7,12 @@ import os
 
 from DDPG import Actor
 
-env_name = "ReacherPyBulletEnv-v0"
+env_name = "Hopper-v2"
 
 env = gym.make(env_name)
 env.render()
 
-model = env_name+'/actor_ddpg.pt'
+model = env_name+'/actor_ddpg_tmp.pt'
 
 
 actor = Actor(env.reset().shape[0], env.action_space.shape[0])
@@ -36,5 +36,6 @@ while True:
 		state = torch.from_numpy(state).type(torch.FloatTensor)
 		action = actor(state)
 		state, reward, done, _ = env.step(action.detach().numpy())
+		env.render()
 		time.sleep(0.01)
 	print(num)
