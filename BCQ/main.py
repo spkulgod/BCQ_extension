@@ -40,7 +40,8 @@ def evaluate_policy(policy, eval_episodes=10):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
-	env_name = "ReacherPyBulletEnv-v0"
+	# env_name = "ReacherPyBulletEnv-v0"
+	env_name = "Hopper-v2"
 	parser.add_argument("--env_name", default=env_name)												# OpenAI gym environment name
 	parser.add_argument("--seed", default=0, type=int)												# Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--buffer_type", default="Robust")											# Prepends name to filename.

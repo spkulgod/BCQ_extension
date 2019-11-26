@@ -40,7 +40,9 @@ def evaluate_policy(policy, eval_episodes=10):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
-	env_name = "ReacherPyBulletEnv-v0"
+	env_name = "Hopper-v2"
+	# env_name = "Reacher-v2"
+	# env_name = "ReacherPyBulletEnv-v0"
 	# env_name = "modified_gym_env:ReacherPyBulletEnv-v1"
 	parser.add_argument("--env_name", default=env_name)												# OpenAI gym environment name
 	parser.add_argument("--seed", default=0, type=int)												# Sets Gym, PyTorch and Numpy seeds
@@ -71,55 +73,61 @@ if __name__ == "__main__":
 	action_dim = env.action_space.shape[0] 
 	max_action = float(env.action_space.high[0])
 
-	# Initialize policy
-	policy = BCQ_modified.BCQ(state_dim, action_dim, max_action)
-
 	# Load buffer
 	replay_buffer = utils.ReplayBuffer()
 	replay_buffer.load(buffer_name)
-	
-	evaluations = []
+		
+	# for k, max_timesteps in [(0.5, 3e5)]:
+	k, max_timesteps = (0.5, 2e5)
+	for lr_critic, lr_vae in [(1e-3, 1e-4), (1e-4, 1e-2), (1e-2, 1e-4), (1e-4, 1e-4)]:
+	# for lr_critic, lr_vae in [(1e-2, 1e-2), (1e-2, 1e-3), (1e-3, 1e-2), (1e-4, 1e-3)]:
+		args.max_timesteps = max_timesteps
+		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+		print('lr_critic =', lr_critic, 'lr_vae', lr_vae)
+		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 
-	episode_num = 0
-	done = True 
+		# Initialize policy
+		policy = BCQ_modified.BCQ(state_dim, action_dim, max_action)
 
-	training_iters = 0
-	while training_iters < args.max_timesteps: 
-		start = time.time()
-		pol_vals = policy.train(replay_buffer, iterations=int(args.eval_freq))
-		stop = time.time()
+		evaluations = []
 
-		evaluations.append(evaluate_policy(policy))
-		np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_mod_tmp', evaluations)
+		episode_num = 0
+		done = True 
 
-		torch.save(policy.critic.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_tmp.pt')
-		torch.save(policy.vae.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae_tmp.pt')
+		training_iters = 0
+		while training_iters < args.max_timesteps: 
+			start = time.time()
+			pol_vals = policy.train(replay_buffer, iterations=int(args.eval_freq), k=k)
+			stop = time.time()
+
+			evaluations.append(evaluate_policy(policy))
+			np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_mod_tmp1', evaluations)
+
+			torch.save(policy.critic.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_tmp1.pt')
+			torch.save(policy.vae.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae_tmp1.pt')
+			
+			plt.plot(evaluations)
+			plt.xlabel('Iterations (x5000)')
+			plt.ylabel('Average Reward')
+			plt.title('BCQ - Average Reward vs Iterations')
+			plt.savefig('./results_modified/' + args.env_name + '/bcq_mod_tmp1.png')
+			plt.close()
+
+			training_iters += args.eval_freq
+			print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
+
+			torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target_tmp1.pt')
+
+		np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae), evaluations)
+
+		torch.save(policy.critic.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae) +'.pt')
+		torch.save(policy.vae.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae) + '.pt')
 		
 		plt.plot(evaluations)
 		plt.xlabel('Iterations (x5000)')
 		plt.ylabel('Average Reward')
 		plt.title('BCQ - Average Reward vs Iterations')
-		plt.savefig('./results_modified/' + args.env_name + '/bcq_mod_tmp.png')
+		plt.savefig('./results_modified/' + args.env_name + '/bcq_mod_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae) +'.png')
 		plt.close()
 
-		training_iters += args.eval_freq
-		print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
-
-		torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target_tmp.pt')
-
-	np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_mod', evaluations)
-
-	torch.save(policy.critic.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic.pt')
-	torch.save(policy.vae.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae.pt')
-	
-	plt.plot(evaluations)
-	plt.xlabel('Iterations (x5000)')
-	plt.ylabel('Average Reward')
-	plt.title('BCQ - Average Reward vs Iterations')
-	plt.savefig('./results_modified/' + args.env_name + '/bcq_mod.png')
-	plt.close()
-
-	training_iters += args.eval_freq
-	print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
-
-	torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target.pt')
+		torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae) + '.pt')

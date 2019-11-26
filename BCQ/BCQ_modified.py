@@ -91,7 +91,8 @@ class VAE(nn.Module):
 	def decode(self, state, z=None):
 		# When sampling from the VAE, the latent vector is clipped to [-0.5, 0.5]
 		if z is None:
-			z = torch.FloatTensor(np.random.normal(0, 1, size=(state.size(0), self.latent_dim))).to(device).clamp(-0.5, 0.5)
+			# z = torch.FloatTensor(np.random.normal(0, 1, size=(state.size(0), self.latent_dim))).to(device).clamp(-0.5, 0.5)
+			z = torch.FloatTensor(np.zeros((state.size(0), self.latent_dim))).to(device)
 
 		a = F.relu(self.d1(torch.cat([state, z], 1)))
 		a = F.relu(self.d2(a))
@@ -100,7 +101,7 @@ class VAE(nn.Module):
 
 
 class BCQ(object):
-	def __init__(self, state_dim, action_dim, max_action):
+	def __init__(self, state_dim, action_dim, max_action, lr_critic=1e-3, lr_vae=1e-3):
 
 		latent_dim = action_dim * 2
 
@@ -112,10 +113,10 @@ class BCQ(object):
 		self.critic = Critic(state_dim, action_dim).to(device)
 		self.critic_target = Critic(state_dim, action_dim).to(device)
 		self.critic_target.load_state_dict(self.critic.state_dict())
-		self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
+		self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=lr_critic)
 
 		self.vae = VAE(state_dim, action_dim, latent_dim, max_action).to(device)
-		self.vae_optimizer = torch.optim.Adam(self.vae.parameters()) 
+		self.vae_optimizer = torch.optim.Adam(self.vae.parameters(), lr=lr_vae) 
 
 		self.max_action = max_action
 		self.action_dim = action_dim
@@ -123,25 +124,26 @@ class BCQ(object):
 
 	def select_action(self, state):		
 		with torch.no_grad():
-			state = torch.FloatTensor(state.reshape(1, -1)).repeat(10, 1).to(device)
+			state = torch.FloatTensor(state.reshape(1, -1)).to(device)
+			# state = torch.FloatTensor(state.reshape(1, -1)).repeat(10, 1).to(device)
 			# action = self.actor(state, self.vae.decode(state))
 			action = self.vae.decode(state)
-			q1 = self.critic.q1(state, action)
-			ind = q1.max(0)[1]
-		return action[ind].cpu().data.numpy().flatten()
+			# q1 = self.critic.q1(state, action)
+			# ind = q1.max(0)[1]
+		return action.cpu().data.numpy().flatten()
 
 
-	def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005):
+	def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, k=0.5):
 
 		for it in range(iterations):
 
 			# Sample replay buffer / batch
-			state_np, next_state_np, action, reward, done = replay_buffer.sample(batch_size)
+			state_np, next_state_np, action, reward, not_done = replay_buffer.sample(batch_size)
 			state 		= torch.FloatTensor(state_np).to(device)
 			action 		= torch.FloatTensor(action).to(device)
 			next_state 	= torch.FloatTensor(next_state_np).to(device)
 			reward 		= torch.FloatTensor(reward).to(device)
-			done 		= torch.FloatTensor(1 - done).to(device)
+			not_done 		= torch.FloatTensor(not_done).to(device)
 
 
 			# Variational Auto-Encoder Training
@@ -169,7 +171,7 @@ class BCQ(object):
 				target_Q = 0.75 * torch.min(target_Q1, target_Q2) + 0.25 * torch.max(target_Q1, target_Q2)
 				target_Q = target_Q.view(batch_size, -1).max(1)[0].view(-1, 1)
 
-				target_Q = reward + done * discount * target_Q
+				target_Q = reward + not_done * discount * target_Q
 
 			current_Q1, current_Q2 = self.critic(state, action)
 			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
@@ -178,7 +180,6 @@ class BCQ(object):
 			# critic_loss.backward()
 			# self.critic_optimizer.step()
 
-			k = 0.6
 			combined_loss = k * critic_loss + (1 - k) * recon_loss + 0.5 * KL_loss
 
 			self.critic_optimizer.zero_grad()

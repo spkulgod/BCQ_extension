@@ -135,12 +135,14 @@ class BCQ(object):
 		for it in range(iterations):
 
 			# Sample replay buffer / batch
-			state_np, next_state_np, action, reward, done = replay_buffer.sample(batch_size)
+			state_np, next_state_np, action, reward, not_done = replay_buffer.sample(batch_size)
+
 			state 		= torch.FloatTensor(state_np).to(device)
 			action 		= torch.FloatTensor(action).to(device)
 			next_state 	= torch.FloatTensor(next_state_np).to(device)
 			reward 		= torch.FloatTensor(reward).to(device)
-			done 		= torch.FloatTensor(1 - done).to(device)
+			not_done 		= torch.FloatTensor(not_done).to(device)
+
 
 
 			# Variational Auto-Encoder Training
@@ -167,7 +169,7 @@ class BCQ(object):
 				target_Q = 0.75 * torch.min(target_Q1, target_Q2) + 0.25 * torch.max(target_Q1, target_Q2)
 				target_Q = target_Q.view(batch_size, -1).max(1)[0].view(-1, 1)
 
-				target_Q = reward + done * discount * target_Q
+				target_Q = reward + not_done * discount * target_Q
 
 			current_Q1, current_Q2 = self.critic(state, action)
 			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)

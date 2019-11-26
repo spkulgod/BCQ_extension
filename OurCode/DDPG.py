@@ -55,7 +55,7 @@ class Replay():
 	def buffer_add(self, exp):
 		"""
 		A function to add a dictionary to the buffer
-		param: exp : A dictionary consisting of state, action, reward , next state and done flag
+		param: exp : A dictionary consisting of state, action, reward , next state and not_done flag
 		"""
 		self.buffer.append(exp)
 		if len(self.buffer) > self.buffer_size:
@@ -70,17 +70,17 @@ class Replay():
 		action = []
 		reward = []
 		next_state = []
-		done = []
+		not_done = []
 		for s, ns, a, r, d in random.sample(self.buffer, N):
 			state.append(s)
 			action.append(a)
 			reward.append(r)
 			next_state.append(ns)
-			done.append(d)
+			not_done.append(d)
 		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(),\
 		 		torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(),\
 				torch.FloatTensor(next_state).cuda(),\
-				torch.FloatTensor(done).resize_((len(done), 1)).cuda()
+				torch.FloatTensor(not_done).resize_((len(not_done), 1)).cuda()
 
 class Actor(nn.Module):
 	def __init__(self, state_dim, action_dim):
@@ -223,8 +223,8 @@ class DDPG():
 			self.ReplayBuffer.buffer_add((state, next_state, action, reward, 1-done))
 			state = next_state
 			
-			states, actions, rewards, next_states, dones = self.ReplayBuffer.buffer_sample(self.batch_size)
-			y = rewards + dones*self.gamma * self.critic_target(next_states, self.actor_target(next_states).detach()).detach()
+			states, actions, rewards, next_states, not_dones = self.ReplayBuffer.buffer_sample(self.batch_size)
+			y = rewards + not_dones*self.gamma * self.critic_target(next_states, self.actor_target(next_states).detach()).detach()
 			Q = self.critic(states, actions)
 
 			self.optimizer_critic.zero_grad()

@@ -57,7 +57,7 @@ class Replay():
 	def buffer_add(self, exp):
 		"""
 		A function to add a dictionary to the buffer
-		param: exp : A dictionary consisting of state, action, reward , next state and done flag
+		param: exp : A dictionary consisting of state, action, reward , next state and not_done flag
 		"""
 		self.buffer.append(exp)
 		if len(self.buffer) > self.buffer_size:
@@ -72,18 +72,18 @@ class Replay():
 		action = []
 		reward = []
 		next_state = []
-		done = []
+		not_done = []
 		for s, ns, a, r, d in random.sample(self.buffer, N):
 			state.append(s)
 			action.append(a)
 			reward.append(r)
 			next_state.append(ns)
-			done.append(d)
+			not_done.append(d)
 
 		return torch.FloatTensor(state).cuda(), torch.FloatTensor(action).cuda(),\
 		 	torch.FloatTensor(reward).resize_((len(reward), 1)).cuda(),\
 			torch.FloatTensor(next_state).cuda(),\
-			torch.FloatTensor(done).resize_((len(done), 1)).cuda()
+			torch.FloatTensor(not_done).resize_((len(not_done), 1)).cuda()
 
 
 class Actor(nn.Module):
@@ -236,9 +236,9 @@ class TD3():
 			self.ReplayBuffer.buffer_add((state, next_state, action, reward, 1-done))
 			state = next_state
 			
-			states, actions, rewards, next_states, dones = self.ReplayBuffer.buffer_sample(self.batch_size)
+			states, actions, rewards, next_states, not_dones = self.ReplayBuffer.buffer_sample(self.batch_size)
 			action = (self.actor_target(next_states) + torch.clamp(noise.sample([next_states.shape[0], self.action_dim]), -0.5, 0.5).cuda()).detach()
-			y = rewards + dones*self.gamma * torch.min(self.critic_target_1(next_states, action), self.critic_target_2(next_states, action)).detach() 
+			y = rewards + not_dones*self.gamma * torch.min(self.critic_target_1(next_states, action), self.critic_target_2(next_states, action)).detach() 
 			
 			Q1 = self.critic_1(states, actions)
 			Q2 = self.critic_2(states, actions)
