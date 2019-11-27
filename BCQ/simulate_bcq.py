@@ -10,7 +10,8 @@ import pybulletgym.envs
 
 from BCQ import BCQ
 
-env_name = 'ReacherPyBulletEnv-v0'
+# env_name = 'ReacherPyBulletEnv-v0'
+env_name = 'Reacher-v2'
 # env_name = "modified_gym_env:ReacherPyBulletEnv-v1"
 env = gym.make(env_name)
 env.render()
@@ -44,5 +45,6 @@ while True:
 		state = torch.from_numpy(state).type(torch.FloatTensor)
 		action = bcq.select_action(state)
 		state, reward, done, _ = env.step(action)
+		env.render()
 		time.sleep(0.01)
 	print(num)
