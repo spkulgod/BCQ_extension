@@ -65,14 +65,6 @@ if __name__ == "__main__":
 	torch.manual_seed(args.seed)
 	np.random.seed(args.seed)
 	
-	# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	args.env_name = args.env_name + '_target'
-
-	os.chdir('results_modified')
-	if not os.path.exists(args.env_name):
-		os.makedirs('./'+args.env_name)
-	os.chdir('../')
-	
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0] 
 	max_action = float(env.action_space.high[0])
@@ -81,18 +73,37 @@ if __name__ == "__main__":
 	replay_buffer = utils.ReplayBuffer()
 	replay_buffer.load(buffer_name)
 		
-	# for k, max_timesteps in [(0.5, 3e5)]:
-	k, max_timesteps = (0.5, 3e5)
-	for lr_critic, lr_vae in [(1e-3, 1e-3)]:
+	for k, max_timesteps in [(0.1, 3e5)]:
+	# for k, max_timesteps in [(0.1, 5e3), (0.9, 3e5), (0.4, 3e5), (0.6, 3e5)]:
+	# for k, max_timesteps in [(0.3, 3e5), (0.7, 3e5), (0.45, 3e5), (0.55, 3e5)]:
+	# k, max_timesteps = (0.5, 3e5)
+	# for lr_critic, lr_vae in [(1e-3, 1e-3)]:
 	# for lr_critic, lr_vae in [(1e-3, 1e-4), (1e-4, 1e-2), (1e-2, 1e-4), (1e-4, 1e-4)]:
 	# for lr_critic, lr_vae in [(1e-2, 1e-2), (1e-2, 1e-3), (1e-3, 1e-2), (1e-4, 1e-3)]:
+	# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		lr_critic, lr_vae = (1e-3, 1e-3)
+
+		args.env_name = env_name
+
+		os.chdir('results_modified')
+		if not os.path.exists(args.env_name):
+			os.makedirs('./'+args.env_name)
+
+		os.chdir(args.env_name)
+
+		args.env_name = args.env_name + '/k_' + str(k)
+		if not os.path.exists('k_'+str(k)):
+			os.makedirs('./'+'k_'+str(k))
+		os.chdir('../../')
+
+
 		args.max_timesteps = max_timesteps
 		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-		print('lr_critic =', lr_critic, 'lr_vae', lr_vae)
+		print('k =', k)
 		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 
 		# Initialize policy
-		policy = BCQ_modified.BCQ(state_dim, action_dim, max_action)
+		policy = BCQ_modified.BCQ(state_dim, action_dim, max_action, lr_vae=lr_vae, lr_critic=lr_critic)
 
 		evaluations = []
 

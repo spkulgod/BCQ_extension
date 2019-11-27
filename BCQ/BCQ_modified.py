@@ -5,8 +5,8 @@ import torch.nn.functional as F
 import utils
 
 
-device = torch.device("cpu")
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # class Actor(nn.Module):
@@ -92,8 +92,8 @@ class VAE(nn.Module):
 	def decode(self, state, z=None):
 		# When sampling from the VAE, the latent vector is clipped to [-0.5, 0.5]
 		if z is None:
-			# z = torch.FloatTensor(np.random.normal(0, 1, size=(state.size(0), self.latent_dim))).to(device).clamp(-0.5, 0.5)
-			z = torch.FloatTensor(np.zeros((state.size(0), self.latent_dim))).to(device)
+			z = torch.FloatTensor(np.random.normal(0, 1, size=(state.size(0), self.latent_dim))).to(device).clamp(-0.5, 0.5)
+			# z = torch.FloatTensor(np.zeros((state.size(0), self.latent_dim))).to(device)
 
 		a = F.relu(self.d1(torch.cat([state, z], 1)))
 		a = F.relu(self.d2(a))
@@ -128,14 +128,14 @@ class BCQ(object):
 
 	def select_action(self, state):		
 		with torch.no_grad():
-			state = torch.FloatTensor(state.reshape(1, -1)).to(device)
-			# state = torch.FloatTensor(state.reshape(1, -1)).repeat(10, 1).to(device)
+			# state = torch.FloatTensor(state.reshape(1, -1)).to(device)
+			state = torch.FloatTensor(state.reshape(1, -1)).repeat(10, 1).to(device)
 			# action = self.actor(state, self.vae.decode(state))
 			action = self.vae.decode(state)
-			# q1 = self.critic.q1(state, action)
-			# ind = q1.max(0)[1]
-		return action.cpu().data.numpy().flatten()
-		# return action[ind].cpu().data.numpy().flatten()
+			q1 = self.critic.q1(state, action)
+			ind = q1.max(0)[1]
+		# return action.cpu().data.numpy().flatten()
+		return action[ind].cpu().data.numpy().flatten()
 
 
 	def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, k=0.5):
