@@ -171,8 +171,7 @@ class BCQ(object):
 				target_Q = 0.75 * torch.min(target_Q1, target_Q2) + 0.25 * torch.max(target_Q1, target_Q2)
 				target_Q = target_Q.view(batch_size, -1).max(1)[0].view(-1, 1)
 
-				target_Q = reward + not_done * discount * target_Q
-
+				target_Q = reward + not_done* discount * target_Q
 			current_Q1, current_Q2 = self.critic(state, action)
 			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
 
@@ -181,7 +180,6 @@ class BCQ(object):
 			# self.critic_optimizer.step()
 
 			combined_loss = k * critic_loss + (1 - k) * recon_loss + 0.5 * KL_loss
-
 			self.critic_optimizer.zero_grad()
 			self.vae_optimizer.zero_grad()
 			combined_loss.backward()
