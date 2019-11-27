@@ -203,7 +203,9 @@ class BCQ(object):
 			# self.actor_optimizer.step()
 
 
-			# Update Target Networks 
+			# Update Target Networks
+			# adding delay
+			# if(it%2==0): 
 			for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
 				target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
