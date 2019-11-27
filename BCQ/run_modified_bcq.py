@@ -51,6 +51,7 @@ if __name__ == "__main__":
 	parser.add_argument("--max_timesteps", default=1e6, type=float)									# Max time steps to run environment for
 	args = parser.parse_args()
 
+
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
 	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
 	buffer_name = args.env_name+"/buffer_td3"
@@ -59,15 +60,18 @@ if __name__ == "__main__":
 	print ("Settings: " + file_name)
 	print ("---------------------------------------")
 
-	os.chdir('results_modified')
-	if not os.path.exists(env_name):
-		os.makedirs('./'+env_name)
-	os.chdir('../')
-
 	env = gym.make(args.env_name)
 	env.seed(args.seed)
 	torch.manual_seed(args.seed)
 	np.random.seed(args.seed)
+	
+	# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	args.env_name = args.env_name + '_target'
+
+	os.chdir('results_modified')
+	if not os.path.exists(args.env_name):
+		os.makedirs('./'+args.env_name)
+	os.chdir('../')
 	
 	state_dim = env.observation_space.shape[0]
 	action_dim = env.action_space.shape[0] 
@@ -78,8 +82,9 @@ if __name__ == "__main__":
 	replay_buffer.load(buffer_name)
 		
 	# for k, max_timesteps in [(0.5, 3e5)]:
-	k, max_timesteps = (0.5, 2e5)
-	for lr_critic, lr_vae in [(1e-3, 1e-4), (1e-4, 1e-2), (1e-2, 1e-4), (1e-4, 1e-4)]:
+	k, max_timesteps = (0.5, 3e5)
+	for lr_critic, lr_vae in [(1e-3, 1e-3)]:
+	# for lr_critic, lr_vae in [(1e-3, 1e-4), (1e-4, 1e-2), (1e-2, 1e-4), (1e-4, 1e-4)]:
 	# for lr_critic, lr_vae in [(1e-2, 1e-2), (1e-2, 1e-3), (1e-3, 1e-2), (1e-4, 1e-3)]:
 		args.max_timesteps = max_timesteps
 		print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
@@ -91,6 +96,14 @@ if __name__ == "__main__":
 
 		evaluations = []
 
+		########## FOR STARTING FROM PREVIOUS RUN ###############
+		# folder = 'results_modified/'+args.env_name+'/'
+		# policy.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp1.pt'))
+		# policy.critic_target.load_state_dict(torch.load(folder+'bcq_mod_critic_target_tmp1.pt'))
+		# policy.vae.load_state_dict(torch.load(folder+'bcq_mod_vae_tmp1.pt'))
+		# evaluations = np.load(folder+file_name+'_mod_tmp1.npy').tolist()
+		########## FOR STARTING FROM PREVIOUS RUN ###############
+
 		episode_num = 0
 		done = True 
 
@@ -101,22 +114,22 @@ if __name__ == "__main__":
 			stop = time.time()
 
 			evaluations.append(evaluate_policy(policy))
-			np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_mod_tmp1', evaluations)
+			np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_mod_tmp', evaluations)
 
-			torch.save(policy.critic.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_tmp1.pt')
-			torch.save(policy.vae.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae_tmp1.pt')
+			torch.save(policy.critic.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_tmp.pt')
+			torch.save(policy.vae.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae_tmp.pt')
 			
 			plt.plot(evaluations)
 			plt.xlabel('Iterations (x5000)')
 			plt.ylabel('Average Reward')
 			plt.title('BCQ - Average Reward vs Iterations')
-			plt.savefig('./results_modified/' + args.env_name + '/bcq_mod_tmp1.png')
+			plt.savefig('./results_modified/' + args.env_name + '/bcq_mod_tmp.png')
 			plt.close()
 
 			training_iters += args.eval_freq
 			print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
 
-			torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target_tmp1.pt')
+			torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target_tmp.pt')
 
 		np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae), evaluations)
 

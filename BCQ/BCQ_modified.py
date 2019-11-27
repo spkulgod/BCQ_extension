@@ -5,7 +5,8 @@ import torch.nn.functional as F
 import utils
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # class Actor(nn.Module):
@@ -118,6 +119,9 @@ class BCQ(object):
 		self.vae = VAE(state_dim, action_dim, latent_dim, max_action).to(device)
 		self.vae_optimizer = torch.optim.Adam(self.vae.parameters(), lr=lr_vae) 
 
+		self.vae_target = VAE(state_dim, action_dim, latent_dim, max_action).to(device)
+		self.vae_target.load_state_dict(self.vae_target.state_dict())
+
 		self.max_action = max_action
 		self.action_dim = action_dim
 
@@ -131,6 +135,7 @@ class BCQ(object):
 			# q1 = self.critic.q1(state, action)
 			# ind = q1.max(0)[1]
 		return action.cpu().data.numpy().flatten()
+		# return action[ind].cpu().data.numpy().flatten()
 
 
 	def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, k=0.5):
@@ -165,7 +170,7 @@ class BCQ(object):
 				
 				# Compute value of perturbed actions sampled from the VAE
 				# target_Q1, target_Q2 = self.critic_target(state_rep, self.actor_target(state_rep, self.vae.decode(state_rep)))
-				target_Q1, target_Q2 = self.critic_target(state_rep, self.vae.decode(state_rep))
+				target_Q1, target_Q2 = self.critic_target(state_rep, self.vae_target.decode(state_rep))
 
 				# Soft Clipped Double Q-learning 
 				target_Q = 0.75 * torch.min(target_Q1, target_Q2) + 0.25 * torch.max(target_Q1, target_Q2)
@@ -204,3 +209,6 @@ class BCQ(object):
 
 			# for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
 			# 	target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+
+			for param, target_param in zip(self.vae.parameters(), self.vae_target.parameters()):
+				target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
