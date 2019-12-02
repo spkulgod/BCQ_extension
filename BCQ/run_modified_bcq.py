@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
 	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
 	# buffer_name = args.env_name+"/buffer_td3"
-	buffer_name = args.env_name+"/buffer_mod_p_0.5"
+	buffer_name = args.env_name+"/buffer_mod_p_mixed_0.75"
 
 	print ("---------------------------------------")
 	print ("Settings: " + file_name)
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 	# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		lr_critic, lr_vae = (1e-3, 1e-3)
 
-		args.env_name = env_name
+		args.env_name = env_name+"run3"
 
 		os.chdir('results_modified')
 		if not os.path.exists(args.env_name):

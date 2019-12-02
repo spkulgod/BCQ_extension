@@ -35,7 +35,7 @@ done = False
 state = env.reset()
 
 min_thr = 0
-prob_thr = 0.1
+prob_thr = 0.75
 reverse = False
 while len(Buffer.buffer) != 1e6:
     if done:
@@ -52,6 +52,8 @@ while len(Buffer.buffer) != 1e6:
             Buffer.buffer_add((state, next_state, action, reward, 1-done))
         else:
             next_state, reward, done, _ = env.step(action)
+            if p> prob_thr-0.5:
+                Buffer.buffer_add((state, next_state, action, reward, 1-done))
     else:
         next_state, reward, done, _ = env.step(action)
         Buffer.buffer_add((state, next_state, action, reward, 1-done))
@@ -63,4 +65,4 @@ while len(Buffer.buffer) != 1e6:
     if length % 5000 == 0:
         print(length)
 
-np.save(env_name + '/buffer_mod_p_' + str(prob_thr) + '.npy', Buffer.buffer)
+np.save(env_name + '/buffer_mod_p_mixed_' + str(prob_thr) + '.npy', Buffer.buffer)

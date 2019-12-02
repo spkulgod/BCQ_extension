@@ -205,12 +205,12 @@ class BCQ(object):
 
 			# Update Target Networks
 			# adding delay
-			# if(it%2==0): 
-			for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
-				target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+			if(it%2==0): 
+				for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
+					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
 			# for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
 			# 	target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
-			for param, target_param in zip(self.vae.parameters(), self.vae_target.parameters()):
-				target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+				for param, target_param in zip(self.vae.parameters(), self.vae_target.parameters()):
+					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
