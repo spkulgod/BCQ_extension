@@ -84,7 +84,7 @@ if __name__ == "__main__":
 	# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		lr_critic, lr_vae = (1e-3, 1e-3)
 
-		args.env_name = env_name+"run3"
+		args.env_name = env_name+"run4"
 
 		os.chdir('results_modified')
 		if not os.path.exists(args.env_name):
