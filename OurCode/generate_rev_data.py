@@ -16,7 +16,25 @@ from torch.distributions import Normal
 
 from TD3 import Actor, Replay
 
-env_name = "Reacher-v2"
+
+def check(env_name):
+    if env_name == 'Reacher-v2':
+        thr = 0
+        val = env.get_body_com("fingertip")
+        return val[0]>thr and val[1]<thr
+
+    elif env_name == 'Hopper-v2':
+        min_thr = 4
+        max_thr = 6
+        val = env.sim.data.qpos[0]
+        return val < max_thr and val > min_thr
+
+    else:
+        1/0
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+env_name = "Hopper-v2"
 model = env_name+'/actor_td3.pt'
 
 env = gym.make(env_name)
@@ -26,7 +44,7 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 
 actor = Actor(env.reset().shape[0], env.action_space.shape[0])
-actor.load_state_dict(torch.load(model, map_location=torch.device('cpu')))
+actor.load_state_dict(torch.load(model, map_location=torch.device(device)))
 actor.eval()
 
 Buffer = Replay(1.2e6,0,env.reset().shape[0], env.action_space.shape[0],env)
@@ -34,7 +52,6 @@ Buffer = Replay(1.2e6,0,env.reset().shape[0], env.action_space.shape[0],env)
 done = False
 state = env.reset()
 
-min_thr = 0
 prob_thr = 0.75
 reverse = False
 while len(Buffer.buffer) != 1e6:
@@ -42,8 +59,8 @@ while len(Buffer.buffer) != 1e6:
         state = env.reset()
     state = torch.from_numpy(state).type(torch.FloatTensor)
     action = actor(state).cpu().detach().numpy()
-    tip = env.get_body_com("fingertip")
-    if (tip[0]>min_thr and tip[1]<min_thr):
+
+    if check(env_name):
         reverse = True
         p = np.random.uniform(0,1)
         if p > prob_thr:

@@ -47,7 +47,7 @@ if __name__ == "__main__":
 	parser.add_argument("--env_name", default=env_name)												# OpenAI gym environment name
 	parser.add_argument("--seed", default=0, type=int)												# Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--buffer_type", default="Robust")											# Prepends name to filename.
-	parser.add_argument("--eval_freq", default=1e3, type=float)										# How often (time steps) we evaluate
+	parser.add_argument("--eval_freq", default=5e3, type=float)										# How often (time steps) we evaluate
 	parser.add_argument("--max_timesteps", default=1e6, type=float)									# Max time steps to run environment for
 	args = parser.parse_args()
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 	# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		lr_critic, lr_vae = (1e-3, 1e-3)
 
-		args.env_name = env_name+"run4"
+		args.env_name = env_name
 
 		os.chdir('results_modified')
 		if not os.path.exists(args.env_name):
