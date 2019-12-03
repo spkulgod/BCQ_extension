@@ -125,6 +125,8 @@ class BCQ(object):
 		self.max_action = max_action
 		self.action_dim = action_dim
 
+		self.max_critic = -np.inf
+
 
 	def select_action(self, state):		
 		with torch.no_grad():
@@ -148,7 +150,7 @@ class BCQ(object):
 			action 		= torch.FloatTensor(action).to(device)
 			next_state 	= torch.FloatTensor(next_state_np).to(device)
 			reward 		= torch.FloatTensor(reward).to(device)
-			not_done 		= torch.FloatTensor(not_done).to(device)
+			not_done 	= torch.FloatTensor(not_done).to(device)
 
 
 			# Variational Auto-Encoder Training
@@ -180,15 +182,28 @@ class BCQ(object):
 			current_Q1, current_Q2 = self.critic(state, action)
 			critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
 
+
 			# self.critic_optimizer.zero_grad()
 			# critic_loss.backward()
 			# self.critic_optimizer.step()
 
-			combined_loss = k * critic_loss + (1 - k) * recon_loss + 0.5 * KL_loss
+			current_Q = self.critic.q1(state, self.vae.decode(state))
+			current_max_Q = current_Q.abs().max().detach()
+			if current_max_Q > self.max_critic:
+				self.max_critic = current_max_Q
+			actor_loss = -current_Q.mean()/self.max_critic
+
+			combined_loss = k * actor_loss + (1 - k) * recon_loss + 0.5 * KL_loss
+
+			# print(actor_loss, recon_loss, KL_loss, combined_loss)
+
+			self.critic_optimizer.zero_grad()
+			critic_loss.backward()
+			self.critic_optimizer.step()
+
 			self.critic_optimizer.zero_grad()
 			self.vae_optimizer.zero_grad()
 			combined_loss.backward()
-			self.critic_optimizer.step()
 			self.vae_optimizer.step()
 
 			# Pertubation Model / Action Training
@@ -214,3 +229,6 @@ class BCQ(object):
 
 				for param, target_param in zip(self.vae.parameters(), self.vae_target.parameters()):
 					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+
+			if it % 1000 == 0:
+				print(actor_loss.cpu().detach().numpy(), recon_loss.cpu().detach().numpy(), KL_loss.cpu().detach().numpy(), critic_loss.cpu().detach().numpy())

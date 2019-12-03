@@ -49,6 +49,6 @@ while True:
 		action = bcq.select_action(state)
 		state, reward, done, _ = env.step(action)
 		# print(env.get_body_com("target"))
-		# env.render()
-		# time.sleep(0.01)
+		env.render()
+		time.sleep(0.01)
 	print(num)

@@ -54,8 +54,8 @@ if __name__ == "__main__":
 
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
 	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
-	# buffer_name = args.env_name+"/buffer_td3"
-	buffer_name = args.env_name+"/buffer_mod_p_mixed_0.6"
+	buffer_name = args.env_name+"/buffer_td3"
+	# buffer_name = args.env_name+"/buffer_mod_p_mixed_0.6"
 
 	print ("---------------------------------------")
 	print ("Settings: " + file_name)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 	replay_buffer = utils.ReplayBuffer()
 	replay_buffer.load(buffer_name)
 		
-	for k, max_timesteps in [(0.5, 3e5)]:
+	for k, max_timesteps in [(0.05, 3e5)]:
 	# for k, max_timesteps in [(0.1, 5e3), (0.9, 3e5), (0.4, 3e5), (0.6, 3e5)]:
 	# for k, max_timesteps in [(0.3, 3e5), (0.7, 3e5), (0.45, 3e5), (0.55, 3e5)]:
 	# k, max_timesteps = (0.5, 3e5)
