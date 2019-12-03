@@ -11,8 +11,8 @@ import pybulletgym.envs
 from BCQ_modified import BCQ
 
 # env_name = 'ReacherPyBulletEnv-v0'
-# env_name = 'Hopper-v2'
-env_name = 'Reacher-v2'
+env_name = 'Hopper-v2'
+# env_name = 'Reacher-v2'
 # env_name = "modified_gym_env:ReacherPyBulletEnv-v1"
 env = gym.make(env_name)
 # env.render()
@@ -37,7 +37,7 @@ while True:
 		bcq.vae.eval()
 		last_update_time = cur_time
 
-	time.sleep(0.5)
+	# time.sleep(0.5)
 	done = False
 	state = env.reset()
 	# env.render()
@@ -49,6 +49,6 @@ while True:
 		action = bcq.select_action(state)
 		state, reward, done, _ = env.step(action)
 		# print(env.get_body_com("target"))
-		env.render()
-		time.sleep(0.01)
+		# env.render()
+		# time.sleep(0.01)
 	print(num)

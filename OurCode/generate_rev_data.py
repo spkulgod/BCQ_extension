@@ -24,8 +24,8 @@ def check(env_name):
         return val[0]>thr and val[1]<thr
 
     elif env_name == 'Hopper-v2':
-        min_thr = 4
-        max_thr = 6
+        min_thr = 0.2
+        max_thr = 2.2
         val = env.sim.data.qpos[0]
         return val < max_thr and val > min_thr
 
@@ -52,8 +52,10 @@ Buffer = Replay(1e6,0,env.reset().shape[0], env.action_space.shape[0],env)
 done = False
 state = env.reset()
 
-prob_thr = 0.75
+prob_thr = 0.9
 reverse = False
+number_correct = 0
+correct_percentage = 0.8
 while len(Buffer.buffer) != 1e6:
     if done:
         state = env.reset()
@@ -69,17 +71,23 @@ while len(Buffer.buffer) != 1e6:
             Buffer.buffer_add((state, next_state, action, reward, 1-done))
         else:
             next_state, reward, done, _ = env.step(action)
-            if p> prob_thr-0.5:
+            if number_correct / Buffer.buffer_size < correct_percentage:
                 Buffer.buffer_add((state, next_state, action, reward, 1-done))
-    else:
+                number_correct += 1
+            else:
+                prob_thr = 0.6
+    elif number_correct / Buffer.buffer_size < correct_percentage:
         next_state, reward, done, _ = env.step(action)
         Buffer.buffer_add((state, next_state, action, reward, 1-done))
+        number_correct += 1
+    else:
+        next_state, reward, done, _ = env.step(action)
 
     reverse = False
     state = next_state
 
     length = len(Buffer.buffer)
-    if length % 5000 == 0:
+    if length % 1000 == 0:
         print(length)
 
 np.save(env_name + '/buffer_mod_p_mixed_' + str(prob_thr) + '.npy', Buffer.buffer)

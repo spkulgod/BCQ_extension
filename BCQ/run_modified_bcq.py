@@ -40,8 +40,8 @@ def evaluate_policy(policy, eval_episodes=10):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
-	# env_name = "Hopper-v2"
-	env_name = "Reacher-v2"
+	env_name = "Hopper-v2"
+	# env_name = "Reacher-v2"
 	# env_name = "ReacherPyBulletEnv-v0"
 	# env_name = "modified_gym_env:ReacherPyBulletEnv-v1"
 	parser.add_argument("--env_name", default=env_name)												# OpenAI gym environment name
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
 	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
 	# buffer_name = args.env_name+"/buffer_td3"
-	buffer_name = args.env_name+"/buffer_mod_p_mixed_0.75"
+	buffer_name = args.env_name+"/buffer_mod_p_mixed_0.6"
 
 	print ("---------------------------------------")
 	print ("Settings: " + file_name)

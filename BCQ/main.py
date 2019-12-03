@@ -41,19 +41,19 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
 	# env_name = "ReacherPyBulletEnv-v0"
-	# env_name = "Hopper-v2"
-	env_name = "Reacher-v2"
+	env_name = "Hopper-v2"
+	# env_name = "Reacher-v2"
 	parser.add_argument("--env_name", default=env_name)												# OpenAI gym environment name
 	parser.add_argument("--seed", default=0, type=int)												# Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--buffer_type", default="Robust")											# Prepends name to filename.
-	parser.add_argument("--eval_freq", default=1e3, type=float)										# How often (time steps) we evaluate
-	parser.add_argument("--max_timesteps", default=1e6, type=float)									# Max time steps to run environment for
+	parser.add_argument("--eval_freq", default=5e3, type=float)										# How often (time steps) we evaluate
+	parser.add_argument("--max_timesteps", default=3e6, type=float)									# Max time steps to run environment for
 	args = parser.parse_args()
 
 	file_name = "BCQ_%s_%s" % (args.env_name, str(args.seed))
 	# buffer_name = "%s_%s_%s" % (args.buffer_type, args.env_name, str(args.seed))
 	# buffer_name = args.env_name+"/buffer_td3"
-	buffer_name = args.env_name+"/buffer_mod_p_mixed_0.75"
+	buffer_name = args.env_name+"/buffer_mod_p_mixed_0.6"
 
 	print ("---------------------------------------")
 	print ("Settings: " + file_name)
@@ -85,6 +85,32 @@ if __name__ == "__main__":
 	episode_num = 0
 	done = True 
 
+	training_iters = 0
+	while training_iters < args.max_timesteps: 
+		start = time.time()
+		pol_vals = policy.train(replay_buffer, iterations=int(args.eval_freq))
+		stop = time.time()
+
+		evaluations.append(evaluate_policy(policy))
+		np.save("./results/"+ args.env_name + '/'+ file_name, evaluations)
+
+		torch.save(policy.actor.state_dict(), './results/' + args.env_name + '/bcq_actor_tmp.pt')
+		torch.save(policy.critic.state_dict(), './results/' + args.env_name + '/bcq_critic_tmp.pt')
+		torch.save(policy.vae.state_dict(), './results/' + args.env_name + '/bcq_vae_tmp.pt')
+		
+		plt.plot(evaluations)
+		plt.xlabel('Iterations (x5000)')
+		plt.ylabel('Average Reward')
+		plt.title('BCQ - Average Reward vs Iterations')
+		plt.savefig('./results/' + args.env_name + '/bcq_tmp.png')
+		plt.close()
+
+		training_iters += args.eval_freq
+		print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
+
+		torch.save(policy.actor_target.state_dict(), './results/' + args.env_name + '/bcq_actor_target_tmp.pt')
+		torch.save(policy.critic_target.state_dict(), './results/' + args.env_name + '/bcq_critic_target_tmp.pt')
+
 	np.save("./results/"+ args.env_name + '/'+ file_name, evaluations)
 
 	torch.save(policy.actor.state_dict(), './results/' + args.env_name + '/bcq_actor.pt')
@@ -97,29 +123,3 @@ if __name__ == "__main__":
 	plt.title('BCQ - Average Reward vs Iterations')
 	plt.savefig('./results/' + args.env_name + '/bcq.png')
 	plt.close()
-
-	training_iters = 0
-	while training_iters < args.max_timesteps: 
-		start = time.time()
-		pol_vals = policy.train(replay_buffer, iterations=int(args.eval_freq))
-		stop = time.time()
-
-		evaluations.append(evaluate_policy(policy))
-		np.save("./results/"+ args.env_name + '/'+ file_name, evaluations)
-
-		torch.save(policy.actor.state_dict(), './results/' + args.env_name + '/bcq_actor.pt')
-		torch.save(policy.critic.state_dict(), './results/' + args.env_name + '/bcq_critic.pt')
-		torch.save(policy.vae.state_dict(), './results/' + args.env_name + '/bcq_vae.pt')
-		
-		plt.plot(evaluations)
-		plt.xlabel('Iterations (x5000)')
-		plt.ylabel('Average Reward')
-		plt.title('BCQ - Average Reward vs Iterations')
-		plt.savefig('./results/' + args.env_name + '/bcq.png')
-		plt.close()
-
-		training_iters += args.eval_freq
-		print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
-
-		torch.save(policy.actor_target.state_dict(), './results/' + args.env_name + '/bcq_actor_target.pt')
-		torch.save(policy.critic_target.state_dict(), './results/' + args.env_name + '/bcq_critic_target.pt')
