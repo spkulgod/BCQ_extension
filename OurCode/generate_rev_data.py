@@ -47,7 +47,7 @@ actor = Actor(env.reset().shape[0], env.action_space.shape[0])
 actor.load_state_dict(torch.load(model, map_location=torch.device(device)))
 actor.eval()
 
-Buffer = Replay(1.2e6,0,env.reset().shape[0], env.action_space.shape[0],env)
+Buffer = Replay(1e6,0,env.reset().shape[0], env.action_space.shape[0],env)
 
 done = False
 state = env.reset()

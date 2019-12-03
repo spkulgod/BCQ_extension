@@ -89,13 +89,14 @@ if __name__ == "__main__":
 		os.chdir('results_modified')
 		if not os.path.exists(args.env_name):
 			os.makedirs('./'+args.env_name)
+		os.chdir('../')
 
-		os.chdir(args.env_name)
+		# os.chdir(args.env_name)
 
-		args.env_name = args.env_name + '/k_' + str(k)
-		if not os.path.exists('k_'+str(k)):
-			os.makedirs('./'+'k_'+str(k))
-		os.chdir('../../')
+		# args.env_name = args.env_name + '/k_' + str(k)
+		# if not os.path.exists('k_'+str(k)):
+		# 	os.makedirs('./'+'k_'+str(k))
+		# os.chdir('../../')
 
 
 		args.max_timesteps = max_timesteps

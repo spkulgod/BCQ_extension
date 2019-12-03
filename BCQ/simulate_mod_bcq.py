@@ -17,7 +17,7 @@ env_name = 'Reacher-v2'
 env = gym.make(env_name)
 # env.render()
 
-folder = 'results_modified/'+env_name+'/k_0.5/'
+folder = 'results_modified/'+env_name+'/'
 
 bcq = BCQ(env.reset().shape[0], env.action_space.shape[0], float(env.action_space.high[0]))
 bcq.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp.pt', map_location=torch.device('cpu')))
@@ -40,7 +40,7 @@ while True:
 	time.sleep(0.5)
 	done = False
 	state = env.reset()
-	env.render()
+	# env.render()
 	# time.sleep(5)
 	num = 0
 	while not done:
