@@ -88,6 +88,14 @@ if __name__ == "__main__":
 
 		evaluations = []
 
+		# folder = 'results/'+args.env_name+'/'
+		# policy.critic.load_state_dict(torch.load(folder+'bcq_critic_tmp.pt'))
+		# policy.critic_target.load_state_dict(torch.load(folder+'bcq_critic_target_tmp.pt'))
+		# policy.actor.load_state_dict(torch.load(folder+'bcq_actor_tmp.pt'))
+		# policy.actor_target.load_state_dict(torch.load(folder+'bcq_actor_target_tmp.pt'))
+		# policy.vae.load_state_dict(torch.load(folder+'bcq_vae_tmp.pt'))
+		# evaluations = np.load(folder+file_name+'_tmp.npy').tolist()
+
 		episode_num = 0
 		done = True 
 
@@ -129,3 +137,6 @@ if __name__ == "__main__":
 		plt.title('BCQ - Average Reward vs Iterations')
 		plt.savefig('./results/' + args.env_name + '/bcq.png')
 		plt.close()
+
+		torch.save(policy.actor_target.state_dict(), './results/' + args.env_name + '/bcq_actor_target.pt')
+		torch.save(policy.critic_target.state_dict(), './results/' + args.env_name + '/bcq_critic_target.pt')

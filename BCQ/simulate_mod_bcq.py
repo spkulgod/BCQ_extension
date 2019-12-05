@@ -38,7 +38,7 @@ while True:
 		bcq.vae.eval()
 		last_update_time = cur_time
 
-	# time.sleep(0.5)
+	time.sleep(0.1)
 	done = False
 	state = env.reset()
 	# env.render()
@@ -51,5 +51,5 @@ while True:
 		state, reward, done, _ = env.step(action)
 		# print(env.get_body_com("target"))
 		env.render()
-		# time.sleep(0.01)
+		time.sleep(0.01)
 	print(num, env.sim.data.qpos[0])

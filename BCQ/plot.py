@@ -11,7 +11,7 @@ lr_critic, lr_vae = (1e-3, 1e-3)
 
 num = 0
 char = ['Fig 1', 'Fig 2', 'Fig 3', 'Fig 4']
-for env_name, buffer_name in [('Reacher-v2', "/buffer_td3"), ('Reacher-v2', "/buffer_mod_p_mixed_0.75"), ('Hopper-v2', "/buffer_td3"), ('Hopper-v2', "/buffer_mod_p_mixed_0.6")]:
+for env_name, buffer_name in [('Reacher-v2', "/buffer_td3"), ('Reacher-v2', "/buffer_mod_p_mixed_0.8"), ('Hopper-v2', "/buffer_td3"), ('Hopper-v2', "/buffer_mod_p_mixed_0.6")]:
 	file_name = "BCQ_%s_%s" % (env_name, str(seed))
 	env_name = env_name+"_"+buffer_name.split('/')[1]+'_final'
 

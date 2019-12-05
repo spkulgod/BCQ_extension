@@ -114,10 +114,11 @@ if __name__ == "__main__":
 
 			########## FOR STARTING FROM PREVIOUS RUN ###############
 			# folder = 'results_modified/'+args.env_name+'/'
-			# policy.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp1.pt'))
-			# policy.critic_target.load_state_dict(torch.load(folder+'bcq_mod_critic_target_tmp1.pt'))
-			# policy.vae.load_state_dict(torch.load(folder+'bcq_mod_vae_tmp1.pt'))
-			# evaluations = np.load(folder+file_name+'_mod_tmp1.npy').tolist()
+			# print(folder)
+			# policy.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp.pt'))
+			# policy.critic_target.load_state_dict(torch.load(folder+'bcq_mod_critic_target_tmp.pt'))
+			# policy.vae.load_state_dict(torch.load(folder+'bcq_mod_vae_tmp.pt'))
+			# evaluations = np.load(folder+file_name+'_mod_tmp.npy').tolist()
 			########## FOR STARTING FROM PREVIOUS RUN ###############
 
 			episode_num = 0
@@ -146,6 +147,7 @@ if __name__ == "__main__":
 				print ("Training iterations: " + str(training_iters), "Time:", int(stop-start))
 
 				torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target_tmp.pt')
+				torch.save(policy.vae_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae_target_tmp.pt')
 
 			np.save("./results_modified/"+ args.env_name + '/'+ file_name + '_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae), evaluations)
 
@@ -160,3 +162,4 @@ if __name__ == "__main__":
 			plt.close()
 
 			torch.save(policy.critic_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_critic_target_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae) + '.pt')
+			torch.save(policy.vae_target.state_dict(), './results_modified/' + args.env_name + '/bcq_mod_vae_target_lr_cri_' + str(lr_critic) + '_lr_vae_' + str(lr_vae) + '.pt')
