@@ -9,6 +9,8 @@ def running_mean(array, N):
 seed = 0
 lr_critic, lr_vae = (1e-3, 1e-3)
 
+num = 0
+char = ['Fig 1', 'Fig 2', 'Fig 3', 'Fig 4']
 for env_name, buffer_name in [('Reacher-v2', "/buffer_td3"), ('Reacher-v2', "/buffer_mod_p_mixed_0.75"), ('Hopper-v2', "/buffer_td3"), ('Hopper-v2', "/buffer_mod_p_mixed_0.6")]:
 	file_name = "BCQ_%s_%s" % (env_name, str(seed))
 	env_name = env_name+"_"+buffer_name.split('/')[1]+'_final'
@@ -31,10 +33,11 @@ for env_name, buffer_name in [('Reacher-v2', "/buffer_td3"), ('Reacher-v2', "/bu
 	plt.xlabel('Iterations (x1000)')
 	plt.ylabel('Average Reward')
 	if buffer_name == "/buffer_td3":
-		plt.title('Concurrent - Average Reward vs Iterations')
+		plt.title(char[num] + ': ' + env_name.split('_')[0] + ', Concurrent Batch')
 	else:
-		plt.title('Erroneous - Average Reward vs Iterations')
+		plt.title(char[num] + ': ' + env_name.split('_')[0] + ', Reversed Batch')
 	plt.legend()
 	# plt.show()
 	plt.savefig('../results_combined/' + env_name + '/' + env_name + '_mean.png')
 	plt.close()
+	num += 1
