@@ -8,5 +8,7 @@
 **/OurCode/**/*.pt
 **/OurCode/**/*.png
 **/MUJOCO_LOG.TXT
+DataShared/Hopper-v2/buffer_td3.npy
+DataShared/Reacher-v2/buffer_td3.npy
 
 
