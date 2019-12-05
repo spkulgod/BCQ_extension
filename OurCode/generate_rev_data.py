@@ -44,10 +44,10 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 
 actor = Actor(env.reset().shape[0], env.action_space.shape[0])
-actor.load_state_dict(torch.load(model, map_location=torch.device("cpu")))
+actor.load_state_dict(torch.load(model, map_location=torch.device(device)))
 actor.eval()
 
-Buffer = Replay(4e5,0,env.reset().shape[0], env.action_space.shape[0],env)
+Buffer = Replay(2e5,0,env.reset().shape[0], env.action_space.shape[0],env)
 
 done = False
 state = env.reset()
