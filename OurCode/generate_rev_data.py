@@ -21,7 +21,7 @@ def check(env_name):
     if env_name == 'Reacher-v2':
         thr = 0
         val = env.get_body_com("fingertip")
-        return val[0]>thr and val[1]<thr
+        return True or val[0]>thr and val[1]<thr
 
     elif env_name == 'Hopper-v2':
         min_thr = 0.2
@@ -34,7 +34,7 @@ def check(env_name):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-env_name = "Hopper-v2"
+env_name = "Reacher-v2"
 model = env_name+'/actor_td3.pt'
 
 env = gym.make(env_name)
@@ -47,7 +47,7 @@ actor = Actor(env.reset().shape[0], env.action_space.shape[0])
 actor.load_state_dict(torch.load(model, map_location=torch.device(device)))
 actor.eval()
 
-Buffer = Replay(1e6,0,env.reset().shape[0], env.action_space.shape[0],env)
+Buffer = Replay(4e5,0,env.reset().shape[0], env.action_space.shape[0],env)
 
 done = False
 state = env.reset()
@@ -55,8 +55,8 @@ state = env.reset()
 prob_thr = 0.9
 reverse = False
 number_correct = 0
-correct_percentage = 0.8
-while len(Buffer.buffer) != 1e6:
+correct_percentage = 0.4
+while len(Buffer.buffer) != Buffer.buffer_size:
     if done:
         state = env.reset()
     state = torch.from_numpy(state).type(torch.FloatTensor)
@@ -75,7 +75,7 @@ while len(Buffer.buffer) != 1e6:
                 Buffer.buffer_add((state, next_state, action, reward, 1-done))
                 number_correct += 1
             else:
-                prob_thr = 0.6
+                prob_thr = 0.81
     elif number_correct / Buffer.buffer_size < correct_percentage:
         next_state, reward, done, _ = env.step(action)
         Buffer.buffer_add((state, next_state, action, reward, 1-done))

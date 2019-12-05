@@ -141,7 +141,7 @@ class BCQ(object):
 			action 		= torch.FloatTensor(action).to(device)
 			next_state 	= torch.FloatTensor(next_state_np).to(device)
 			reward 		= torch.FloatTensor(reward).to(device)
-			not_done 		= torch.FloatTensor(not_done).to(device)
+			not_done 	= torch.FloatTensor(not_done).to(device)
 
 
 
@@ -177,7 +177,6 @@ class BCQ(object):
 			self.critic_optimizer.zero_grad()
 			critic_loss.backward()
 			self.critic_optimizer.step()
-
 
 			# Pertubation Model / Action Training
 			sampled_actions = self.vae.decode(state)

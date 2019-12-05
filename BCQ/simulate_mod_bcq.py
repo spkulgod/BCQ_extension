@@ -11,13 +11,14 @@ import pybulletgym.envs
 from BCQ_modified import BCQ
 
 # env_name = 'ReacherPyBulletEnv-v0'
-env_name = 'Hopper-v2'
-# env_name = 'Reacher-v2'
+# env_name = 'Hopper-v2'
+env_name = 'Reacher-v2'
 # env_name = "modified_gym_env:ReacherPyBulletEnv-v1"
 env = gym.make(env_name)
 # env.render()
 
-folder = 'results_modified/'+env_name+'/'
+folder = 'results_modified/'+env_name+'lr/'
+folder = 'results_modified/'+env_name+'_buffer_mod_p_mixed_0.8_final/'
 
 bcq = BCQ(env.reset().shape[0], env.action_space.shape[0], float(env.action_space.high[0]))
 bcq.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp.pt', map_location=torch.device('cpu')))
@@ -50,5 +51,5 @@ while True:
 		state, reward, done, _ = env.step(action)
 		# print(env.get_body_com("target"))
 		env.render()
-		time.sleep(0.01)
-	print(num)
+		# time.sleep(0.01)
+	print(num, env.sim.data.qpos[0])

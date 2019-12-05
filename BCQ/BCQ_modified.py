@@ -62,12 +62,14 @@ class VAE(nn.Module):
 		super(VAE, self).__init__()
 		self.e1 = nn.Linear(state_dim + action_dim, 750)
 		self.e2 = nn.Linear(750, 750)
+		# self.e3 = nn.Linear(750, 750)
 
 		self.mean = nn.Linear(750, latent_dim)
 		self.log_std = nn.Linear(750, latent_dim)
 
 		self.d1 = nn.Linear(state_dim + latent_dim, 750)
 		self.d2 = nn.Linear(750, 750)
+		# self.d3 = nn.Linear(750, 750)
 		self.d3 = nn.Linear(750, action_dim)
 
 		self.max_action = max_action
@@ -77,6 +79,7 @@ class VAE(nn.Module):
 	def forward(self, state, action):
 		z = F.relu(self.e1(torch.cat([state, action], 1)))
 		z = F.relu(self.e2(z))
+		# z = F.relu(self.e3(z))
 
 		mean = self.mean(z)
 		# Clamped for numerical stability 
@@ -97,6 +100,7 @@ class VAE(nn.Module):
 
 		a = F.relu(self.d1(torch.cat([state, z], 1)))
 		a = F.relu(self.d2(a))
+		# a = F.relu(self.d3(a))
 		return self.max_action * torch.tanh(self.d3(a))
 		
 
@@ -193,7 +197,8 @@ class BCQ(object):
 				self.max_critic = current_max_Q
 			actor_loss = -current_Q.mean()/self.max_critic
 
-			combined_loss = k * actor_loss + (1 - k) * recon_loss + 0.5 * KL_loss
+			# combined_loss = k * actor_loss + 0.5 * recon_loss + 0.5 * KL_loss
+			combined_loss = k * actor_loss + 0.5 * recon_loss + 0.5 * KL_loss
 
 			# print(actor_loss, recon_loss, KL_loss, combined_loss)
 
@@ -230,5 +235,8 @@ class BCQ(object):
 				for param, target_param in zip(self.vae.parameters(), self.vae_target.parameters()):
 					target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
-			if it % 1000 == 0:
-				print(actor_loss.cpu().detach().numpy(), recon_loss.cpu().detach().numpy(), KL_loss.cpu().detach().numpy(), critic_loss.cpu().detach().numpy())
+			# if it % 1000 == 0:
+			# 	print(actor_loss.cpu().detach().numpy(), recon_loss.cpu().detach().numpy(), KL_loss.cpu().detach().numpy(), critic_loss.cpu().detach().numpy())
+
+# 36 x 48 - 78$
+# 24 x 36 - 39$
