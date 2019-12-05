@@ -44,7 +44,7 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 
 actor = Actor(env.reset().shape[0], env.action_space.shape[0])
-actor.load_state_dict(torch.load(model, map_location=torch.device(device)))
+actor.load_state_dict(torch.load(model, map_location=torch.device("cpu")))
 actor.eval()
 
 Buffer = Replay(4e5,0,env.reset().shape[0], env.action_space.shape[0],env)
@@ -55,7 +55,7 @@ state = env.reset()
 prob_thr = 0.9
 reverse = False
 number_correct = 0
-correct_percentage = 0.4
+correct_percentage = 0.8
 while len(Buffer.buffer) != Buffer.buffer_size:
     if done:
         state = env.reset()
@@ -75,7 +75,7 @@ while len(Buffer.buffer) != Buffer.buffer_size:
                 Buffer.buffer_add((state, next_state, action, reward, 1-done))
                 number_correct += 1
             else:
-                prob_thr = 0.81
+                prob_thr = 0.8
     elif number_correct / Buffer.buffer_size < correct_percentage:
         next_state, reward, done, _ = env.step(action)
         Buffer.buffer_add((state, next_state, action, reward, 1-done))
