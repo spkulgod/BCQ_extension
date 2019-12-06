@@ -18,8 +18,8 @@ env = gym.make(env_name)
 # env.render()
 
 # folder = 'results_modified/'+env_name+'/'
-folder = 'results_modified/'+env_name+'_buffer_mod_p_mixed_0.6_final/'
-# folder = 'results_modified/'+env_name+'_buffer_td3_final/'
+# folder = 'results_modified/'+env_name+'_buffer_mod_p_mixed_0.6_final/'
+folder = 'results_modified/'+env_name+'_buffer_td3_final/'
 
 bcq = BCQ(env.reset().shape[0], env.action_space.shape[0], float(env.action_space.high[0]))
 bcq.critic.load_state_dict(torch.load(folder+'bcq_mod_critic_tmp.pt', map_location=torch.device('cpu')))
@@ -43,10 +43,10 @@ while True:
 		bcq.vae.eval()
 		last_update_time = cur_time
 
-	time.sleep(0.1)
+	# time.sleep(0.1)
 	done = False
 	state = env.reset()
-	# env.render()
+	env.render()
 	# time.sleep(5)
 	num = 0
 	while not done:
@@ -56,5 +56,5 @@ while True:
 		state, reward, done, _ = env.step(action)
 		# print(env.get_body_com("target"))
 		env.render()
-		time.sleep(0.05)
+		# time.sleep(0.05)
 	# print(num, env.sim.data.qpos[0])
