@@ -19,16 +19,12 @@ from TD3 import Actor, Replay
 
 def check(env_name):
     if env_name == 'Reacher-v2':
-        thr = 0
-        val = env.get_body_com("fingertip")
-        return True or val[0]>thr and val[1]<thr
-
+        return True
     elif env_name == 'Hopper-v2':
         min_thr = 0.2
         max_thr = 2.2
         val = env.sim.data.qpos[0]
         return val < max_thr and val > min_thr
-
     else:
         1/0
 
@@ -47,7 +43,7 @@ actor = Actor(env.reset().shape[0], env.action_space.shape[0])
 actor.load_state_dict(torch.load(model, map_location=torch.device(device)))
 actor.eval()
 
-Buffer = Replay(2e5,0,env.reset().shape[0], env.action_space.shape[0],env)
+Buffer = Replay(1e6,0,env.reset().shape[0], env.action_space.shape[0],env)
 
 done = False
 state = env.reset()
@@ -89,5 +85,8 @@ while len(Buffer.buffer) != Buffer.buffer_size:
     length = len(Buffer.buffer)
     if length % 1000 == 0:
         print(length)
+
+if not os.path.exists("./"+env_name):
+    os.makedirs("./"+env_name)
 
 np.save(env_name + '/buffer_mod_p_mixed_' + str(prob_thr) + '.npy', Buffer.buffer)
