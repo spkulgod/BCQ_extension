@@ -11,7 +11,6 @@ import time
 import matplotlib.pyplot as plt
 
 import utils
-import DDPG
 import BCQ_improved
 
 
@@ -78,10 +77,8 @@ if __name__ == "__main__":
 			os.makedirs('./'+args.env_name)
 		os.chdir('../')
 
-		args.max_timesteps = max_timesteps
-
 		# Initialize policy
-		policy = BCQ_modified.BCQ(state_dim, action_dim, max_action, lr_vae=lr_vae, lr_critic=lr_critic)
+		policy = BCQ_improved.BCQ(state_dim, action_dim, max_action, lr_vae=lr_vae, lr_critic=lr_critic)
 
 		evaluations = []
 		episode_num = 0

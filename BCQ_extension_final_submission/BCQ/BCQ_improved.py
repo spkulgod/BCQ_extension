@@ -43,13 +43,14 @@ class VAE(nn.Module):
 		super(VAE, self).__init__()
 		self.e1 = nn.Linear(state_dim + action_dim, 750)
 		self.e2 = nn.Linear(750, 750)
-h
+
 		self.mean = nn.Linear(750, latent_dim)
 		self.log_std = nn.Linear(750, latent_dim)
 
 		self.d1 = nn.Linear(state_dim + latent_dim, 750)
 		self.d2 = nn.Linear(750, 750)
-
+		self.d3 = nn.Linear(750,action_dim)
+		
 		self.max_action = max_action
 		self.latent_dim = latent_dim
 
