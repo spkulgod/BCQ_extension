@@ -11,7 +11,6 @@ import time
 import matplotlib.pyplot as plt
 
 import utils
-import DDPG
 import BCQ
 
 
