@@ -1,7 +1,7 @@
 # BCQ_extension
 
-## Cahnges Done
-i) Chenged the loss function 
+## Changes Done
+i) Changed the loss function 
 ii)Removed 10 samples and taing min
  
 ## Things to try
